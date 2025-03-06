@@ -15,9 +15,11 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
     return (
         <>
             <DropdownMenuLabel className="p-0 font-normal">
-                <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                    <UserInfo user={user} showEmail={true} />
-                </div>
+                <Link className="block w-full" href={route('user_info')} as="button" prefetch onClick={cleanup}>
+                    <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+                        <UserInfo user={user} showEmail={true} />
+                    </div>
+                </Link>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>

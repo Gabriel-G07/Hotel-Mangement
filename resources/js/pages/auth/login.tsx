@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import AuthLayout from '@/layouts/auth-layout';
 
 type LoginForm = {
-    email: string;
+    emailOrUsername: string;
     password: string;
     remember: boolean;
 };
@@ -22,8 +22,8 @@ interface LoginProps {
 }
 
 export default function Login({ status, canResetPassword }: LoginProps) {
-    const { data, setData, post, processing, errors, reset } = useForm<Required<LoginForm>>({
-        email: '',
+    const { data, setData, post, processing, errors, reset } = useForm<LoginForm>({
+        emailOrUsername: '',
         password: '',
         remember: false,
     });
@@ -36,25 +36,25 @@ export default function Login({ status, canResetPassword }: LoginProps) {
     };
 
     return (
-        <AuthLayout title="Log in to your account" description="Enter your email and password below to log in">
+        <AuthLayout title="Log in to your account" description="Enter your email/ username and password below to log in">
             <Head title="Log in" />
 
             <form className="flex flex-col gap-6" onSubmit={submit}>
                 <div className="grid gap-6">
                     <div className="grid gap-2">
-                        <Label htmlFor="email">Email address</Label>
+                        <Label htmlFor="emailOrUsername">Email or Username</Label>
                         <Input
-                            id="email"
-                            type="email"
+                            id="emailOrUsername"
+                            type="text"
                             required
                             autoFocus
                             tabIndex={1}
                             autoComplete="email"
-                            value={data.email}
-                            onChange={(e) => setData('email', e.target.value)}
-                            placeholder="email@example.com"
+                            value={data.emailOrUsername}
+                            onChange={(e) => setData('emailOrUsername', e.target.value)}
+                            placeholder="Email or Username"
                         />
-                        <InputError message={errors.email} />
+                        <InputError message={errors.emailOrUsername} />
                     </div>
 
                     <div className="grid gap-2">
