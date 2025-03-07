@@ -33,7 +33,7 @@ export default function Roles({ roles }: RolesProps) {
         e.preventDefault();
 
         if (isEditing) {
-            patch(route('roles.update', selectedRole?.role_id), {
+            patch(route('management.settings.roles.update', selectedRole?.role_id), {
                 data,
                 preserveScroll: true,
                 onSuccess: () => {
@@ -50,7 +50,7 @@ export default function Roles({ roles }: RolesProps) {
                 },
             });
         } else {
-            post(route('roles.store'), {
+            post(route('management.settings.roles.store'), {
                 data,
                 preserveScroll: true,
                 onSuccess: () => {
@@ -89,7 +89,7 @@ export default function Roles({ roles }: RolesProps) {
     };
 
     return (
-        <AppLayout breadcrumbs={[{ title: 'Roles settings', href: route('roles.index') }]}>
+        <AppLayout breadcrumbs={[{ title: 'Roles settings', href: route('management.settings.roles.index') }]}>
             <Head title="Roles settings" />
 
             <SettingsLayout>

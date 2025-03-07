@@ -34,7 +34,7 @@ class ProfileController extends Controller
             'password' => ['required', 'current_password'],
         ]);
 
-        return to_route('management.profile.edit')->with('success', 'Password verified successfully.');
+        return to_route('management.settings.profile.edit')->with('success', 'Password verified successfully.');
     }
 
     /**
@@ -70,7 +70,7 @@ class ProfileController extends Controller
             }
         }
 
-        return to_route('management.profile.edit')->with('success', 'Profile updated successfully.');
+        return to_route('management.settings.profile.edit')->with('success', 'Profile updated successfully.');
     }
 
     /**

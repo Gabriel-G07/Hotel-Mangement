@@ -31,7 +31,7 @@ class ManagementUsersController extends Controller
             ];
         });
 
-        return Inertia::render('management/users_list', ['users' => $users]);
+        return Inertia::render('management/users/users_list', ['users' => $users]);
     }
 
     /**
@@ -40,7 +40,7 @@ class ManagementUsersController extends Controller
     public function create(): Response
     {
         $roles = Roles::all();
-        return Inertia::render('management/add_users', ['roles' => $roles]);
+        return Inertia::render('management/users/add_users', ['roles' => $roles]);
     }
 
     /**
@@ -73,7 +73,7 @@ class ManagementUsersController extends Controller
 
         // Optionally, you can send an email to the user with their username and password.
 
-        return redirect()->route('management.users_list')->with('success', 'User created successfully. Password: ' . $password); //Return the password for testing.
+        return redirect()->route('management.users.users_list')->with('success', 'User created successfully. Password: ' . $password); //Return the password for testing.
     }
 
     /**
@@ -110,7 +110,7 @@ class ManagementUsersController extends Controller
             }
         }
 
-        return redirect()->route('management.users_list')->with('success', 'User updated successfully.');
+        return redirect()->route('management.users.users_list')->with('success', 'User updated successfully.');
     }
 
     /**
@@ -129,7 +129,7 @@ class ManagementUsersController extends Controller
             'column_affected' => 'is_verified',
         ]);
 
-        return redirect()->route('management.users_list')->with('success', 'User verified successfully.');
+        return redirect()->route('management.users.users_list')->with('success', 'User verified successfully.');
     }
 
     /**
@@ -137,6 +137,6 @@ class ManagementUsersController extends Controller
      */
     public function show(User $user)
     {
-        return Inertia::render('management/users_list', ['selectedUser' => $user]);
+        return Inertia::render('management/users/users_list', ['selectedUser' => $user]);
     }
 }

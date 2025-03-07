@@ -10,7 +10,7 @@ interface RecordsProps {
 
 export default function Records({ logs }: RecordsProps) {
     return (
-        <AppLayout breadcrumbs={[{ title: 'Activity Records', href: route('activities.index') }]}>
+        <AppLayout breadcrumbs={[{ title: 'Activity Records', href: route('management.settings.activities.index') }]}>
             <Head title="Activity Records" />
 
             <SettingsLayout>

@@ -74,7 +74,7 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                                 title="Verify your identity"
                                 description="Please enter your password to confirm your identity."
                                 buttonText="Verify Password"
-                                route={route('profile.verify-password')}
+                                route={route('management.settings.profile.verify-password')}
                             />
                         )}
 

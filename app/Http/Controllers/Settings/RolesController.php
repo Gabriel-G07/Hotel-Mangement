@@ -23,7 +23,7 @@ class RolesController extends Controller
     {
         $roles = Roles::whereNotIn('role_name', ['Unassigned', 'Developer'])->get();
 
-        return Inertia::render('settings/roles', [
+        return Inertia::render('management/settings/roles', [
             'roles' => $roles,
         ]);
     }
@@ -51,7 +51,7 @@ class RolesController extends Controller
             }
         }
 
-        return to_route('roles.index');
+        return to_route('management.settings.roles.index');
     }
 
     /**
@@ -62,7 +62,7 @@ class RolesController extends Controller
         $role = Roles::find($role_id);
 
         if (!$role) {
-            return redirect()->route('roles.index')->with('error', 'Role not found.');
+            return redirect()->route('management.settings.roles.index')->with('error', 'Role not found.');
         }
 
         $oldValues = $role->toArray();
@@ -85,7 +85,7 @@ class RolesController extends Controller
             }
         }
 
-        return redirect()->route('roles.index')->with('success', 'Role updated successfully.');
+        return redirect()->route('management.settings.roles.index')->with('success', 'Role updated successfully.');
     }
 
     /**
@@ -107,13 +107,13 @@ class RolesController extends Controller
         $role = Roles::find($role_id);
 
         if (!$role) {
-            return redirect()->route('roles.index')->with('error', 'Role not found.');
+            return redirect()->route('management.settings.roles.index')->with('error', 'Role not found.');
         }
 
         $unassignedRole = Roles::where('role_name', 'Unassigned')->first();
 
         if (!$unassignedRole) {
-            return redirect()->route('roles.index')->with('error', 'Unassigned role not found. Please create it first.');
+            return redirect()->route('management.settings.roles.index')->with('error', 'Unassigned role not found. Please create it first.');
         }
 
         User::where('role_id', $role->role_id)->update(['role_id' => $unassignedRole->role_id]);
@@ -137,6 +137,6 @@ class RolesController extends Controller
             }
         }
 
-        return redirect()->route('roles.index')->with('success', 'Role deleted successfully. Users reassigned to the Unassigned role.');
+        return redirect()->route('management.settings.roles.index')->with('success', 'Role deleted successfully. Users reassigned to the Unassigned role.');
     }
 }
