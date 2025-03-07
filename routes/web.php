@@ -30,15 +30,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('statistics');
     })->name('statistics');
 
-    Route::get('/users', [ManagementUsersController::class, 'index'])->name('management.users_list');
-    Route::get('/users/list', [ManagementUsersController::class, 'index'])->name('management.users_list');
-    Route::post('/users', [ManagementUsersController::class, 'store'])->name('management.add_users');
-    Route::get('/users/add', [ManagementUsersController::class, 'create'])->name('management.add_users');
-    Route::get('/users/activate', function () {
-        return Inertia::render('management/verify_users');
-    })->name('management.verify_users');
+    Route::middleware('auth')->group(function () {
+        Route::redirect('users', 'users/list');
 
-    Route::get('/users/{user}', [ManagementUsersController::class, 'show'])->name('management.users.show');
+        Route::get('/users/list', [ManagementUsersController::class, 'index'])->name('management.users_list');
+        Route::post('/users', [ManagementUsersController::class, 'store'])->name('management.add_users');
+        Route::get('/users/add', [ManagementUsersController::class, 'create'])->name('management.add_users');
+        Route::get('/users/activate', function () {
+            return Inertia::render('management/verify_users');
+        })->name('management.verify_users');
+        Route::get('/users/{user}', [ManagementUsersController::class, 'show'])->name('management.users.show');
+    });
 
     Route::get('user_info', function () {
         return Inertia::render('user_info');
