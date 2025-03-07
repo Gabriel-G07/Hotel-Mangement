@@ -32,22 +32,32 @@ class RegisteredUserController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'username' => 'required|string|lowercase|username|max:255|unique:'.User::class,
+            'username' => 'required|string|lowercase|max:255', //Removed username validation rule
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
             'national_id_number' => 'required|string|max:50',
             'phone_number' => 'string|max:20',
-            'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
+            'email' => 'required|string|lowercase|email|max:255',
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        $user = User::create([
+        // Find the user with the provided email and national_id_number.
+        $user = User::where('email', $request->email)
+                    ->where('national_id_number', $request->national_id_number)
+                    ->first();
+
+        if (!$user) {
+            // If the user does not exist, you might want to handle this case appropriately.
+            // For example, you could return an error message or redirect to a different page.
+            return back()->withErrors(['email' => 'User with provided credentials not found.']);
+        }
+
+        // Update the user's information.
+        $user->update([
             'username' => $request->username,
-            'national_id_number' => $request->national_id_number,
             'first_name' => $request->first_name,
             'last_name' => $request->last_name,
             'phone_number' => $request->phone_number,
-            'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
 
@@ -62,7 +72,7 @@ class RegisteredUserController extends Controller
                 AuditLog::create([
                     'table_name' => 'users',
                     'record_id' => $user->id,
-                    'action' => 'INSERT',
+                    'action' => 'UPDATE',
                     'new_value' => $value,
                     'changed_by' => $user->username,
                     'column_affected' => $key,
