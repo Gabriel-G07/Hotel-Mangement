@@ -1,3 +1,4 @@
+// Roles.tsx
 import React, { useEffect } from 'react';
 import { type BreadcrumbItem, type SharedData } from '@/types';
 import { Transition } from '@headlessui/react';
@@ -92,75 +93,73 @@ export default function Roles({ roles }: RolesProps) {
             <Head title="Roles settings" />
 
             <SettingsLayout>
-                <div className="space-y-6">
-                    <HeadingSmall title="Roles information" description="Add, Edit or Remove Roles" />
-
-                    <form onSubmit={submit} className="space-y-6">
-                        <div className="grid gap-2">
-                            <Label htmlFor="role_name">Role Name</Label>
-                            <Input
-                                id="role_name"
-                                className="mt-1 block w-full"
-                                value={data.role_name}
-                                onChange={(e) => setData('role_name', e.target.value)}
-                                required
-                                autoComplete="role_name"
-                                placeholder="Role Name"
-                            />
-                            {errors.role_name && <InputError message={errors.role_name} />}
-                        </div>
-
-                        <div className="grid gap-2">
-                            <Label htmlFor="description">Description</Label>
-                            <Input
-                                id="description"
-                                className="mt-1 block w-full"
-                                value={data.description}
-                                onChange={(e) => setData('description', e.target.value)}
-                                required
-                                autoComplete="description"
-                                placeholder="Description"
-                            />
-                            {errors.description && <InputError message={errors.description} />}
-                        </div>
-
-                        {isEditing ? (
-                            <div className="flex items-center gap-4">
-                                <Button type="submit" disabled={processing}>
-                                    Update Role
-                                </Button>
-                                <Button type="button" onClick={handleCancel}>
-                                    Cancel
-                                </Button>
+                <div className="space-y-6 flex flex-col lg:flex-row">
+                    <div className="w-full lg:w-1/2">
+                        <HeadingSmall title="Roles information" description="Add, Edit or Remove Roles" />
+                        <div className="md:max-w-2xl max-w-xl">
+                        <form onSubmit={submit} className="space-y-6">
+                            <div className="grid gap-2">
+                                <Label htmlFor="role_name">Role Name</Label>
+                                <Input
+                                    id="role_name"
+                                    className="mt-1 block w-full"
+                                    value={data.role_name}
+                                    onChange={(e) => setData('role_name', e.target.value)}
+                                    required
+                                    autoComplete="role_name"
+                                    placeholder="Role Name"
+                                />
+                                {errors.role_name && <InputError message={errors.role_name} />}
                             </div>
-                        ) : (
-                            <Button type="submit" disabled={processing}>
-                                Add Role
-                            </Button>
-                        )}
-                    </form>
 
-                    <Table>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>Role Name</TableCell>
-                                <TableCell>Description</TableCell>
+                            <div className="grid gap-2">
+                                <Label htmlFor="description">Description</Label>
+                                <Input
+                                    id="description"
+                                    className="mt-1 block w-full"
+                                    value={data.description}
+                                    onChange={(e) => setData('description', e.target.value)}
+                                    required
+                                    autoComplete="description"
+                                    placeholder="Description"
+                                />
+                                {errors.description && <InputError message={errors.description} />}
+                            </div>
+
+                            {isEditing ? (
+                                <div className="flex items-center gap-4">
+                                    <Button type="submit" disabled={processing}>
+                                        Update Role
+                                    </Button>
+                                    <Button type="button" onClick={handleCancel}>
+                                        Cancel
+                                    </Button>
+                                </div>
+                            ) : (
+                                <Button type="submit" disabled={processing}>
+                                    Add Role
+                                </Button>
+                            )}
+                        </form>
+                        </div>
+                    </div>
+
+                    <div className="w-full lg:w-1/2 mt-6 lg:mt-0">
+                        <Table data={roles}>
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell>Role Name</TableCell>
+                                    <TableCell>Description</TableCell>
                                 <TableCell>Actions</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {roles.map((role) => (
-                                <TableRow key={role.role_id}>
+                            {roles.map((role, index) => (
+                                <TableRow key={role.role_id} index={index}>
                                     <TableCell>{role.role_name}</TableCell>
                                     <TableCell>{role.description}</TableCell>
-                                    <TableCell>
-                                        <Link
-                                            href="#"
-                                            onClick={(e) => handleEdit(e, role)}
-                                            className="text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500"
-                                        >
-                                            Edit
-                                        </Link>
+                                    <TableCell className="flex flex-col items-center">
+                                        <Button variant="link" onClick={(e) => handleEdit(e, role)}>Edit</Button>
                                         <DeleteRole role={role} />
                                     </TableCell>
                                 </TableRow>
@@ -168,7 +167,8 @@ export default function Roles({ roles }: RolesProps) {
                         </TableBody>
                     </Table>
                 </div>
-            </SettingsLayout>
-        </AppLayout>
-    );
+            </div>
+        </SettingsLayout>
+    </AppLayout>
+);
 }

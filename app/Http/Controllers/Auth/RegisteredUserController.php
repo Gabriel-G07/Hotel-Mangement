@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\AuditLog;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -51,6 +52,23 @@ class RegisteredUserController extends Controller
         ]);
 
         event(new Registered($user));
+
+        // Log the user registration
+        $primaryKey = $user->getKeyName();
+        $timestamps = ['created_at', 'updated_at'];
+
+        foreach ($request->all() as $key => $value) {
+            if ($key !== $primaryKey && !in_array($key, $timestamps) && $key !== 'password_confirmation') {
+                AuditLog::create([
+                    'table_name' => 'users',
+                    'record_id' => $user->id,
+                    'action' => 'INSERT',
+                    'new_value' => $value,
+                    'changed_by' => $user->username,
+                    'column_affected' => $key,
+                ]);
+            }
+        }
 
         Auth::login($user);
 

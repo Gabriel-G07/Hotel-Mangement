@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\ProfileUpdateRequest;
+use App\Models\AuditLog;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -29,13 +30,32 @@ class UsersController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $user = $request->user();
+        $oldValues = $user->toArray();
+        $primaryKey = $user->getKeyName();
+        $timestamps = ['created_at', 'updated_at', 'email_verified_at'];
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        $user->fill($request->validated());
+
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
         }
 
-        $request->user()->save();
+        $user->save();
+
+        foreach ($request->validated() as $key => $newValue) {
+            if ($key !== $primaryKey && !in_array($key, $timestamps) && $oldValues[$key] !== $newValue) {
+                AuditLog::create([
+                    'table_name' => 'users',
+                    'record_id' => $user->id,
+                    'action' => 'UPDATE',
+                    'old_value' => $oldValues[$key],
+                    'new_value' => $newValue,
+                    'changed_by' => Auth::user()->username,
+                    'column_affected' => $key,
+                ]);
+            }
+        }
 
         return to_route('profile.edit');
     }
@@ -50,10 +70,26 @@ class UsersController extends Controller
         ]);
 
         $user = $request->user();
+        $oldValues = $user->toArray();
+        $primaryKey = $user->getKeyName();
+        $timestamps = ['created_at', 'updated_at', 'email_verified_at'];
 
         Auth::logout();
 
         $user->delete();
+
+        foreach ($oldValues as $key => $value) {
+            if ($key !== $primaryKey && !in_array($key, $timestamps)) {
+                AuditLog::create([
+                    'table_name' => 'users',
+                    'record_id' => $user->id,
+                    'action' => 'DELETE',
+                    'old_value' => $value,
+                    'changed_by' => Auth::user()->username,
+                    'column_affected' => $key,
+                ]);
+            }
+        }
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();

@@ -31,7 +31,6 @@ class ProfileUpdateRequest extends FormRequest
                 'max:255',
                 Rule::unique(User::class)->ignore($this->user()->id),
             ],
-            'password' => ['required', 'current_password'], // Require password for verification
         ];
     }
 }

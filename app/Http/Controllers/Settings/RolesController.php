@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\RolesUpdateRequest;
 use App\Models\Roles;
 use App\Models\User;
+use App\Models\AuditLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
@@ -32,7 +33,23 @@ class RolesController extends Controller
      */
     public function store(RolesUpdateRequest $request): RedirectResponse
     {
-        Roles::create($request->validated());
+        $role = Roles::create($request->validated());
+
+        $primaryKey = $role->getKeyName();
+        $timestamps = ['created_at', 'updated_at'];
+
+        foreach ($request->validated() as $key => $value) {
+            if ($key !== $primaryKey && !in_array($key, $timestamps)) {
+                AuditLog::create([
+                    'table_name' => 'roles',
+                    'record_id' => $role->role_id,
+                    'action' => 'INSERT',
+                    'new_value' => $value,
+                    'changed_by' => Auth::user()->username,
+                    'column_affected' => $key,
+                ]);
+            }
+        }
 
         return to_route('roles.index');
     }
@@ -48,7 +65,24 @@ class RolesController extends Controller
             return redirect()->route('roles.index')->with('error', 'Role not found.');
         }
 
+        $oldValues = $role->toArray();
+        $primaryKey = $role->getKeyName();
+        $timestamps = ['created_at', 'updated_at'];
+
         $role->update($request->validated());
+
+        foreach ($request->validated() as $key => $newValue) {
+            if ($key !== $primaryKey && !in_array($key, $timestamps) && $oldValues[$key] !== $newValue) {
+                AuditLog::create([
+                    'table_name' => 'roles',
+                    'action' => 'UPDATE',
+                    'old_value' => $oldValues[$key],
+                    'new_value' => $newValue,
+                    'changed_by' => Auth::user()->username,
+                    'column_affected' => $key,
+                ]);
+            }
+        }
 
         return redirect()->route('roles.index')->with('success', 'Role updated successfully.');
     }
@@ -58,7 +92,6 @@ class RolesController extends Controller
      */
     public function destroy(Request $request, $role_id): RedirectResponse
     {
-        // Validate the password
         $request->validate([
             'password' => [
                 'required',
@@ -70,25 +103,37 @@ class RolesController extends Controller
             ],
         ]);
 
-        // Find the role by ID
         $role = Roles::find($role_id);
 
         if (!$role) {
             return redirect()->route('roles.index')->with('error', 'Role not found.');
         }
 
-        // Find the "Unassigned" role
         $unassignedRole = Roles::where('role_name', 'Unassigned')->first();
 
         if (!$unassignedRole) {
             return redirect()->route('roles.index')->with('error', 'Unassigned role not found. Please create it first.');
         }
 
-        // Reassign users with the deleted role to the "Unassigned" role
         User::where('role_id', $role->role_id)->update(['role_id' => $unassignedRole->role_id]);
 
-        // Delete the role
+        $oldValues = $role->toArray();
+        $primaryKey = $role->getKeyName();
+        $timestamps = ['created_at', 'updated_at'];
+
         $role->delete();
+
+        foreach ($oldValues as $key => $value) {
+            if ($key !== $primaryKey && !in_array($key, $timestamps)) {
+                AuditLog::create([
+                    'table_name' => 'roles',
+                    'action' => 'DELETE',
+                    'old_value' => $value,
+                    'changed_by' => Auth::user()->username,
+                    'column_affected' => $key,
+                ]);
+            }
+        }
 
         return redirect()->route('roles.index')->with('success', 'Role deleted successfully. Users reassigned to the Unassigned role.');
     }

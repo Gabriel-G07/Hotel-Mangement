@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
+use App\Models\AuditLog;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
@@ -34,9 +36,28 @@ class PasswordController extends Controller
             'password' => ['required', Password::defaults(), 'confirmed'],
         ]);
 
-        $request->user()->update([
+        $user = $request->user();
+        $oldValues = $user->toArray();
+        $primaryKey = $user->getKeyName();
+        $timestamps = ['created_at', 'updated_at', 'email_verified_at'];
+
+        $user->update([
             'password' => Hash::make($validated['password']),
         ]);
+
+        foreach ($validated as $key => $newValue) {
+            if ($key === 'password') {
+                AuditLog::create([
+                    'table_name' => 'users',
+                    'record_id' => $user->id,
+                    'action' => 'UPDATE',
+                    'old_value' => '********', // Mask the old password
+                    'new_value' => '********', // Mask the new password
+                    'changed_by' => Auth::user()->username,
+                    'column_affected' => $key,
+                ]);
+            }
+        }
 
         return back();
     }

@@ -8,28 +8,23 @@ import { type PropsWithChildren } from 'react';
 
 const sidebarNavItems: NavItem[] = [
     {
-        title: 'Profile',
-        url: '/settings/profile',
+        title: 'Users Dashboard',
+        url: '/users/profile',
         icon: null,
     },
     {
-        title: 'Password',
-        url: '/settings/password',
+        title: 'Active Users',
+        url: '/users/add',
         icon: null,
     },
     {
-        title: 'Appearance',
-        url: '/settings/appearance',
+        title: 'Verify Users',
+        url: '/users/appearance',
         icon: null,
     },
     {
-        title: 'Roles',
-        url: '/settings/roles',
-        icon: null,
-    },
-    {
-        title: 'Activities',
-        url: '/settings/activities',
+        title: 'Add New User',
+        url: '/users/roles',
         icon: null,
     },
 ];
@@ -38,10 +33,10 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
     const currentPath = window.location.pathname;
 
     return (
-        <div className="px-4 py-6 overflow-y-auto overflow-x-hidden h-screen flex flex-col">
+        <div className="px-4 py-6">
             <Heading title="Settings" description="Manage your profile, account and system settings" />
 
-            <div className="flex flex-col space-y-8 lg:flex-row lg:space-y-0 lg:space-x-12 flex-wrap">
+            <div className="flex flex-col space-y-8 lg:flex-row lg:space-y-0 lg:space-x-12">
                 <aside className="w-full max-w-xl lg:w-48">
                     <nav className="flex flex-col space-y-1 space-x-0">
                         {sidebarNavItems.map((item) => (
@@ -64,8 +59,8 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
 
                 <Separator className="my-6 md:hidden" />
 
-                <div className="flex-1 overflow-y-hidden">
-                    <section className="space-y-12">{children}</section>
+                <div className="flex-1 md:max-w-2xl">
+                    <section className="max-w-xl space-y-12">{children}</section>
                 </div>
             </div>
         </div>
