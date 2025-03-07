@@ -1,5 +1,3 @@
-import React from 'react';
-import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';

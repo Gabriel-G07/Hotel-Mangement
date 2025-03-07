@@ -26,7 +26,7 @@ class RecordTrackingController extends Controller
             ];
         });
 
-        return Inertia::render('settings/activities', [
+        return Inertia::render('management/settings/activities', [
             'logs' => $logs,
         ]);
     }

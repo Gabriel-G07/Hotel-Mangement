@@ -11,24 +11,24 @@ Route::get('/', function () {
 // Management Routes
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
-        return Inertia::render('dashboard');
-    })->name('dashboard');
+        return Inertia::render('management/dashboard');
+    })->name('management.dashboard');
 
     Route::get('bookings', function () {
-        return Inertia::render('bookings');
-    })->name('bookings');
+        return Inertia::render('management/bookings');
+    })->name('management.bookings');
 
     Route::get('accounting', function () {
-        return Inertia::render('accounting');
-    })->name('accounting');
+        return Inertia::render('management/accounting');
+    })->name('management.accounting');
 
     Route::get('restaurant', function () {
-        return Inertia::render('restaurant');
-    })->name('restaurant');
+        return Inertia::render('management/restaurant');
+    })->name('management.restaurant');
 
     Route::get('statistics', function () {
-        return Inertia::render('statistics');
-    })->name('statistics');
+        return Inertia::render('management/statistics');
+    })->name('management.statistics');
 
     Route::middleware('auth')->group(function () {
         Route::redirect('users', 'users/list');

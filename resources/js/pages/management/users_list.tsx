@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Head, router } from '@inertiajs/react';
 import { type BreadcrumbItem } from '@/types';
 import AppLayout from '@/layouts/app-layout';
-import UsersLayout from '@/pages/users';
+import UsersLayout from '@/pages/management/users';
 import { Table, TableHead, TableCell, TableBody, TableRow } from '@/components/ui/table';
 import HeadingSmall from '@/components/heading-small';
 
