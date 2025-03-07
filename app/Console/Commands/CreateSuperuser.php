@@ -41,7 +41,7 @@ class CreateSuperuser extends Command
                 'password' => bcrypt('1234'),
                 'phone_number' => '+262783298690',
                 'national_id_number' => '63-1685210 H 03',
-                'is_verified' => 2,
+                'is_verified' => 1,
                 'role_id' => $developerRole->role_id,
                 'profile_picture' => 'https://lh3.googleusercontent.com/a/ACg8ocJ91Qw-fHSrpmd2cmufXi-kV7L8bcC3sr_bJ_dUt9nABYjHt4Ml=s96-c-rg-br100',
             ]
