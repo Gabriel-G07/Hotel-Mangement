@@ -75,6 +75,7 @@ class RolesController extends Controller
             if ($key !== $primaryKey && !in_array($key, $timestamps) && $oldValues[$key] !== $newValue) {
                 AuditLog::create([
                     'table_name' => 'roles',
+                    'record_id' => $role->role_id,
                     'action' => 'UPDATE',
                     'old_value' => $oldValues[$key],
                     'new_value' => $newValue,
@@ -127,6 +128,7 @@ class RolesController extends Controller
             if ($key !== $primaryKey && !in_array($key, $timestamps)) {
                 AuditLog::create([
                     'table_name' => 'roles',
+                    'record_id' => $role->role_id,
                     'action' => 'DELETE',
                     'old_value' => $value,
                     'changed_by' => Auth::user()->username,
