@@ -9,17 +9,17 @@ import { type PropsWithChildren } from 'react';
 const sidebarNavItems: NavItem[] = [
     {
         title: 'Users List',
-        url: '/users/list',
+        url: '/management/users/list',
         icon: null,
     },
     {
         title: 'Add New User',
-        url: '/users/add',
+        url: '/management/users/add',
         icon: null,
     },
     {
         title: 'Activevate Users',
-        url: '/users/activate',
+        url: '/management/users/activate',
         icon: null,
     }
 ];

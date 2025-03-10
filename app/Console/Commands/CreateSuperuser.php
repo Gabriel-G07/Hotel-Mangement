@@ -6,6 +6,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Models\User;
 use App\Models\Roles;
+use App\Models\Settings;
 
 class CreateSuperuser extends Command
 {
@@ -48,5 +49,24 @@ class CreateSuperuser extends Command
         );
 
         $this->info('Superuser created or already exists!');
+
+        // Create default settings for the superuser
+        Settings::firstOrCreate(
+            ['user_id' => $superuser->id],
+            [
+                'theme' => 'system',
+                'screen_timeout' => 30,
+                'font_style' => 'sans-serif',
+                'font_size' => 16,
+                'notifications_enabled' => true,
+                'language' => 'en',
+                'timezone' => 'UTC',
+                'two_factor_auth' => false,
+                'date_format' => 'Y-m-d',
+                'time_format' => 'H:i',
+            ]
+        );
+
+        $this->info('Superuser settings created or already exists!');
     }
 }

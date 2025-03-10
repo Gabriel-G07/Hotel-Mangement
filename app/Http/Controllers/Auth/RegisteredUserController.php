@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Settings; // Import the Settings model
 use App\Models\AuditLog;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
@@ -32,7 +33,7 @@ class RegisteredUserController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'username' => 'required|string|lowercase|max:255', //Removed username validation rule
+            'username' => 'required|string|lowercase|max:255',
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
             'national_id_number' => 'required|string|max:50',
@@ -41,18 +42,14 @@ class RegisteredUserController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        // Find the user with the provided email and national_id_number.
         $user = User::where('email', $request->email)
                     ->where('national_id_number', $request->national_id_number)
                     ->first();
 
         if (!$user) {
-            // If the user does not exist, you might want to handle this case appropriately.
-            // For example, you could return an error message or redirect to a different page.
             return back()->withErrors(['email' => 'User with provided credentials not found.']);
         }
 
-        // Update the user's information.
         $user->update([
             'username' => $request->username,
             'first_name' => $request->first_name,
@@ -63,7 +60,6 @@ class RegisteredUserController extends Controller
 
         event(new Registered($user));
 
-        // Log the user registration
         $primaryKey = $user->getKeyName();
         $timestamps = ['created_at', 'updated_at'];
 
@@ -82,6 +78,34 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        return to_route('dashboard');
+        // Create default settings if they don't exist
+        Settings::firstOrCreate(
+            ['user_id' => $user->id],
+            [
+                'theme' => 'system',
+                'screen_timeout' => 30,
+                'font_style' => 'sans-serif',
+                'font_size' => 16,
+                'notifications_enabled' => true,
+                'language' => 'en',
+                'timezone' => 'UTC',
+                'two_factor_auth' => false,
+                'date_format' => 'Y-m-d',
+                'time_format' => 'H:i',
+            ]
+        );
+
+        // Role-based redirection
+        switch ($user->role->role_name) {
+            case 'Receptionist':
+                return redirect()->intended('/reception/dashboard');
+            case 'Accounting':
+                return redirect()->intended('/accounting'); // Replace with your accounting route
+            case 'Manager':
+                return redirect()->intended('/management/dashboard');
+            // Add more cases for other roles as needed
+            default:
+                return to_route('dashboard'); // Default to dashboard if no match
+        }
     }
 }

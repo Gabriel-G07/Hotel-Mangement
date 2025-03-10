@@ -20,7 +20,7 @@ interface RolesProps {
 }
 
 export default function Roles({ roles }: RolesProps) {
-    const { data, setData, post, patch, delete: destroy, errors, processing } = useForm({
+    const { data, setData, post, patch, delete: destroy, errors, processing, recentlySuccessful } = useForm({
         role_name: '',
         description: '',
         role_id: '',
@@ -136,9 +136,20 @@ export default function Roles({ roles }: RolesProps) {
                                     </Button>
                                 </div>
                             ) : (
-                                <Button type="submit" disabled={processing}>
-                                    Add Role
-                                </Button>
+                                <div className="flex items-center gap-4">
+                                    <Button type="submit" disabled={processing}>
+                                        Add Role
+                                    </Button>
+                                    <Transition
+                                        show={recentlySuccessful}
+                                        enter="transition ease-in-out"
+                                        enterFrom="opacity-0"
+                                        leave="transition ease-in-out"
+                                        leaveTo="opacity-0"
+                                    >
+                                        <p className="text-sm text-neutral-600">Saved</p>
+                                    </Transition>
+                                </div>
                             )}
                         </form>
                         </div>

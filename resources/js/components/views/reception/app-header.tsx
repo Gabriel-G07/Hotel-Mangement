@@ -18,7 +18,7 @@ import AppLogoIcon from '../../app-logo-icon';
 const mainNavItems: NavItem[] = [
     {
         title: 'Reception Dashboard',
-        url: 'reception/dashboard',
+        url: '/reception/dashboard',
         icon: LayoutGrid,
     },
 ];
@@ -94,7 +94,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                         </Sheet>
                     </div>
 
-                    <Link href="/dashboard" prefetch className="flex items-center space-x-2">
+                    <Link href="/reception/dashboard" prefetch className="flex items-center space-x-2">
                         <AppLogo />
                     </Link>
 

@@ -1,6 +1,6 @@
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
-import { NavUser } from '@/components/nav-user';
+import { NavUser } from '@/components/views/reception/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
@@ -10,27 +10,27 @@ import AppLogo from '../../app-logo';
 const mainNavItems: NavItem[] = [
     {
         title: 'Reception Dashboard',
-        url: 'reception/dashboard',
+        url: '/reception/dashboard',
         icon: LayoutGrid,
     },
     {
-        title: 'Payments',
-        url: 'reception/payments',
+        title: 'Payments Reception',
+        url: '/reception/payments',
         icon: DollarSign,
     },
     {
-        title: 'Bookings',
-        url: 'reception/bookings',
+        title: 'Bookings Reception',
+        url: '/reception/bookings',
         icon: Home,
     },
     {
-        title: 'Restaurant',
-        url: 'reception/restaurant',
+        title: 'Restaurant Reception',
+        url: '/reception/restaurant',
         icon: Utensils,
     },
     {
-        title: 'Statistics',
-        url: 'reception/statistics',
+        title: 'Statistics Reception',
+        url: '/reception/statistics',
         icon: ChartBar,
     },
 ];
@@ -55,7 +55,7 @@ export function AppSidebar() {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <Link href="reception/dashboard" prefetch>
+                            <Link href="/reception/dashboard" prefetch>
                                 <AppLogo />
                             </Link>
                         </SidebarMenuButton>

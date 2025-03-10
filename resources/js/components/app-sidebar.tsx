@@ -10,32 +10,32 @@ import AppLogo from './app-logo';
 const mainNavItems: NavItem[] = [
     {
         title: 'Dashboard',
-        url: '/dashboard',
+        url: '/management/dashboard',
         icon: LayoutGrid,
     },
     {
         title: 'Accounting',
-        url: '/accounting',
+        url: '/management/accounting',
         icon: DollarSign,
     },
     {
         title: 'Bookings',
-        url: '/bookings',
+        url: '/management/bookings',
         icon: Home,
     },
     {
         title: 'Restaurant',
-        url: '/restaurant',
+        url: '/management/restaurant',
         icon: Utensils,
     },
     {
         title: 'Statistics',
-        url: '/statistics',
+        url: '/management/statistics',
         icon: ChartBar,
     },
     {
         title: 'Users',
-        url: '/users',
+        url: '/management/users',
         icon: Users,
     },
 ];

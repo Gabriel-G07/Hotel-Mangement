@@ -19,6 +19,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
+        // Create the 'users' table
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('username')->unique();
@@ -35,6 +36,25 @@ return new class extends Migration
             $table->string('password');
             $table->rememberToken();
             $table->timestamps();
+        });
+
+        // Create the 'user_settings' table
+        Schema::create('user_settings', function (Blueprint $table) {
+            $table->id('setting_id');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->string('theme')->default('system');
+            $table->integer('screen_timeout')->default(30);
+            $table->string('font_style')->default('sans-serif');
+            $table->integer('font_size')->default(16);
+            $table->boolean('notifications_enabled')->default(true);
+            $table->string('language')->default('en');
+            $table->string('timezone')->default('UTC');
+            $table->boolean('two_factor_auth')->default(false);
+            $table->string('date_format')->default('Y-m-d');
+            $table->string('time_format')->default('H:i');
+            $table->timestamps();
+
+            $table->unique('user_id');
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
@@ -325,6 +345,7 @@ return new class extends Migration
         Schema::dropIfExists('user_role_assignments');
         Schema::dropIfExists('user_roles');
         Schema::dropIfExists('users');
+        Schema::dropIfExists('user_settings');
         Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');
         Schema::dropIfExists('jobs');

@@ -26,7 +26,7 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
                 <DropdownMenuItem asChild>
                     <Link className="block w-full" href={route('reception.settings.profile.edit')} as="button" prefetch onClick={cleanup}>
                         <Settings className="mr-2" />
-                        Settings
+                        Receptionist Settings
                     </Link>
                 </DropdownMenuItem>
             </DropdownMenuGroup>

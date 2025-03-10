@@ -17,7 +17,7 @@ interface AddUsersProps {
 const breadcrumbs: BreadcrumbItem= [
     {
         title: 'Add User',
-        href: '/users/add',
+        href: 'management/users/add',
     },
 ];
 
@@ -37,7 +37,7 @@ export default function AddUsers({ roles }: AddUsersProps) {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        router.post('/users', user);
+        router.post('/management/users', user);
     };
 
     return (
