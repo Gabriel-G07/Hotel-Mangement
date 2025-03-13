@@ -16,7 +16,7 @@ import AuthenticateUser from '@/components/verify-user';
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Profile settings',
-        href: '/settings/profile',
+        href: 'management/settings/profile',
     },
 ];
 
@@ -53,7 +53,7 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
 
-        patch(route('profile.update'), {
+        patch(route('management.settings.profile.update'), {
             ...data,
             preserveScroll: true,
         });

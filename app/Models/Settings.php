@@ -26,6 +26,8 @@ class Settings extends Model
 
     protected $table = 'user_settings';
 
+    protected $primaryKey = 'setting_id';
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

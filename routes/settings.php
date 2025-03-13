@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\AppearanceController;
+use App\Http\Controllers\Settings\AppearanceController;
 use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\ReceptionPasswordController;
 use App\Http\Controllers\Settings\ProfileController;
@@ -12,10 +12,11 @@ use App\Http\Middleware\CheckReceptionistRole;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
+Route::patch('/settings/appearance/update', [AppearanceController::class, 'update'])->name('settings.appearance.update');
 
 // Management Settings Routes
 Route::middleware(['auth', 'verified', CheckManagerRole::class])->group(function () {
-    Route::redirect('management/settings', 'settings/profile');
+    Route::redirect('management/settings', 'management/settings/profile');
 
     Route::get('management/settings/roles', [RolesController::class, 'index'])->name('management.settings.roles.index');
     Route::get('management/settings/roles/{role_id}/edit', [RolesController::class, 'edit'])->name('management.settings.roles.edit');
@@ -32,16 +33,12 @@ Route::middleware(['auth', 'verified', CheckManagerRole::class])->group(function
 
     Route::get('management/settings/activities', [RecordTrackingController::class, 'index'])->name('management.settings.activities.index');
 
-    Route::get('management/settings/appearance', function () {
-        return Inertia::render('management/settings/appearance');
-    })->name('management.settings.appearance');
+    Route::get('management/settings/appearance/get', [AppearanceController::class, 'getSettings'])->name('settings.appearance.get');
+    Route::get('management/settings/appearance', [AppearanceController::class, 'renderAppearancePage'])->name('settings.appearance');
 });
-
 
 // Reception Settings Routes
 Route::middleware(['auth', 'verified', CheckReceptionistRole::class])->group(function () {
-    Route::redirect('reception/settings', 'reception/settings/profile');
-
     Route::get('reception/settings/profile', [ReceptionProfileController::class, 'edit'])->name('reception.settings.profile.edit');
     Route::patch('reception/settings/profile/verify-password', [ReceptionProfileController::class, 'verifyPassword'])->name('reception.settings.profile.verify-password');
     Route::patch('reception/settings/profile', [ReceptionProfileController::class, 'update'])->name('reception.settings.profile.update');
@@ -49,6 +46,6 @@ Route::middleware(['auth', 'verified', CheckReceptionistRole::class])->group(fun
     Route::get('reception/settings/password', [ReceptionPasswordController::class, 'edit'])->name('reception.settings.password.edit');
     Route::put('reception/settings/password', [ReceptionPasswordController::class, 'update'])->name('reception.settings.password.update');
 
-    Route::patch('reception/settings/appearance/update', [AppearanceController::class, 'update'])->name('reception.settings.appearance.update');
     Route::get('reception/settings/appearance/get', [AppearanceController::class, 'getSettings'])->name('reception.settings.appearance.get');
+    Route::get('reception/settings/appearance', [AppearanceController::class, 'renderAppearancePage'])->name('reception.settings.appearance');
 });

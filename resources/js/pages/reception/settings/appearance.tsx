@@ -6,6 +6,7 @@ import { type BreadcrumbItem } from '@/types';
 
 import AppLayout from '@/layouts/app/reception/app-layout';
 import ReceptionSettingsLayout from '@/layouts/settings/reception_layout';
+import { useAppearance } from '@/hooks/use-appearance';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -15,6 +16,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Appearance() {
+    const { appearance, updateAppearance } = useAppearance();
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Appearance settings" />
@@ -22,7 +25,7 @@ export default function Appearance() {
             <ReceptionSettingsLayout>
                 <div className="space-y-6">
                     <HeadingSmall title="Appearance settings" description="Update your account's appearance settings" />
-                    <AppearanceTabs />
+                    <AppearanceTabs appearance={appearance} onChange={updateAppearance} />
                 </div>
             </ReceptionSettingsLayout>
         </AppLayout>

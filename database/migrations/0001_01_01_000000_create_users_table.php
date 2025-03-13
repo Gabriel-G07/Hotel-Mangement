@@ -41,7 +41,7 @@ return new class extends Migration
         // Create the 'user_settings' table
         Schema::create('user_settings', function (Blueprint $table) {
             $table->id('setting_id');
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('theme')->default('system');
             $table->integer('screen_timeout')->default(30);
             $table->string('font_style')->default('sans-serif');
@@ -53,8 +53,6 @@ return new class extends Migration
             $table->string('date_format')->default('Y-m-d');
             $table->string('time_format')->default('H:i');
             $table->timestamps();
-
-            $table->unique('user_id');
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
@@ -242,12 +240,14 @@ return new class extends Migration
         Schema::create('audit_logs', function (Blueprint $table) {
             $table->id('log_id');
             $table->string('table_name');
-            $table->unsignedBigInteger('record_id');
+            $table->string('column_affected');
             $table->enum('action', ['INSERT', 'UPDATE', 'DELETE']);
             $table->text('old_value')->nullable();
             $table->text('new_value')->nullable();
             $table->string('changed_by');
+            $table->string('operation')->nullable();
             $table->timestamps();
+            $table->unsignedBigInteger('record_id');
 
             $table->foreign('changed_by')->references('username')->on('users');
         });

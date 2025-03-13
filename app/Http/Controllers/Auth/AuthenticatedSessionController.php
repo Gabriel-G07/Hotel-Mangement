@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Inertia\Response;
+use App\Models\Settings; // Import Settings model
+use Illuminate\Support\Facades\Log; // Import Log facade
 
 class AuthenticatedSessionController extends Controller
 {
@@ -33,9 +35,21 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        // Fetch user theme and store it in the session
         $user = Auth::user();
+        $settings = Settings::where('user_id', $user->id)->first();
+        $userTheme = $settings ? $settings->theme : 'system';
+        session(['user_theme' => $userTheme]);
+        Log::info('User theme on login:', ['user_id' => $user->id, 'theme' => $userTheme]);
 
         // Role-based redirection
+        return $this->redirectBasedOnRole();
+    }
+
+    private function redirectBasedOnRole(): RedirectResponse
+    {
+        $user = Auth::user();
+
         switch ($user->role->role_name) {
             case 'Receptionist':
                 return redirect()->intended('/reception/dashboard');
@@ -43,7 +57,6 @@ class AuthenticatedSessionController extends Controller
                 return redirect()->intended('/accounting/dashboard');
             case 'Manager':
                 return redirect()->intended('/management/dashboard');
-            // Add more cases for other roles as needed
             default:
                 return redirect()->intended(route('management.dashboard', absolute: false));
         }

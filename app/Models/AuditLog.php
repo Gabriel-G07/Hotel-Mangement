@@ -9,8 +9,8 @@ class AuditLog extends Model
 {
     use HasFactory;
 
-    protected $table = 'audit_logs'; // Ensure this matches your table name
-    protected $primaryKey = 'log_id'; // Ensure this matches your primary key name
+    protected $table = 'audit_logs';
+    protected $primaryKey = 'log_id';
 
     protected $fillable = [
         'table_name',
@@ -19,6 +19,7 @@ class AuditLog extends Model
         'old_value',
         'new_value',
         'changed_by',
+        'column_affected',
     ];
 
     public function user()

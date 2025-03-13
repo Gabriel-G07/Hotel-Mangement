@@ -54,7 +54,7 @@ class CreateSuperuser extends Command
         Settings::firstOrCreate(
             ['user_id' => $superuser->id],
             [
-                'theme' => 'system',
+                'theme' => 'light',
                 'screen_timeout' => 30,
                 'font_style' => 'sans-serif',
                 'font_size' => 16,
