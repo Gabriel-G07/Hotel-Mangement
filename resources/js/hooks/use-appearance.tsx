@@ -24,7 +24,7 @@ export function initializeTheme() {
 
 export const fetchAppearanceFromBackend = async (): Promise<Appearance | null> => {
     try {
-        const url = route('reception.settings.appearance.get');
+        const url = route('settings.appearance.get');
         const response = await fetch(url);
         const data = await response.json();
         localStorage.setItem('appearance', data.theme);
@@ -46,7 +46,7 @@ export function useAppearance() {
             }
             const csrfToken = csrfTokenElement.content;
 
-            const response = await fetch(route('reception.settings.appearance.update'), {
+            const response = await fetch(route('settings.appearance.update'), {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',

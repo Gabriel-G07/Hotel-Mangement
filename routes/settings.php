@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::patch('/settings/appearance/update', [AppearanceController::class, 'update'])->name('settings.appearance.update');
+Route::get('settings/appearance/get', [AppearanceController::class, 'getSettings'])->name('settings.appearance.get');
 
 // Management Settings Routes
 Route::middleware(['auth', 'verified', CheckManagerRole::class])->group(function () {
@@ -33,7 +34,7 @@ Route::middleware(['auth', 'verified', CheckManagerRole::class])->group(function
 
     Route::get('management/settings/activities', [RecordTrackingController::class, 'index'])->name('management.settings.activities.index');
 
-    Route::get('management/settings/appearance/get', [AppearanceController::class, 'getSettings'])->name('settings.appearance.get');
+
     Route::get('management/settings/appearance', [AppearanceController::class, 'renderAppearancePage'])->name('settings.appearance');
 });
 
@@ -46,6 +47,6 @@ Route::middleware(['auth', 'verified', CheckReceptionistRole::class])->group(fun
     Route::get('reception/settings/password', [ReceptionPasswordController::class, 'edit'])->name('reception.settings.password.edit');
     Route::put('reception/settings/password', [ReceptionPasswordController::class, 'update'])->name('reception.settings.password.update');
 
-    Route::get('reception/settings/appearance/get', [AppearanceController::class, 'getSettings'])->name('reception.settings.appearance.get');
+
     Route::get('reception/settings/appearance', [AppearanceController::class, 'renderAppearancePage'])->name('reception.settings.appearance');
 });
