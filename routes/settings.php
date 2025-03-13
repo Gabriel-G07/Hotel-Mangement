@@ -4,6 +4,8 @@ use App\Http\Controllers\Settings\AppearanceController;
 use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\ReceptionPasswordController;
 use App\Http\Controllers\Settings\ProfileController;
+use App\Http\Controllers\Settings\RoomTypesController;
+use App\Http\Controllers\Settings\CurrencyController;
 use App\Http\Controllers\Settings\ReceptionProfileController;
 use App\Http\Controllers\Settings\RolesController;
 use App\Http\Controllers\Settings\RoomsController;
@@ -29,6 +31,16 @@ Route::middleware(['auth', 'verified', CheckManagerRole::class])->group(function
     Route::patch('management/settings/rooms/{room_id}', [RoomsController::class, 'update'])->name('management.settings.rooms.update');
     Route::post('management/settings/rooms', [RoomsController::class, 'store'])->name('management.settings.rooms.store');
     Route::delete('management/settings/rooms/{room_id}', [RoomsController::class, 'destroy'])->name('management.settings.rooms.destroy');
+
+    Route::get('management/settings/currencies', [CurrencyController::class, 'index'])->name('management.settings.currencies.index');
+    Route::patch('management/settings/currencies/{currency_id}', [CurrencyController::class, 'update'])->name('management.settings.currencies.update');
+    Route::post('management/settings/currencies', [CurrencyController::class, 'store'])->name('management.settings.currencies.store');
+    Route::delete('management/settings/currencies/{currency_id}', [CurrencyController::class, 'destroy'])->name('management.settings.currencies.destroy');
+
+    Route::get('management/settings/room_types', [RoomTypesController::class, 'index'])->name('management.settings.room_types.index');
+    Route::patch('management/settings/room_types/{room_type_id}', [RoomTypesController::class, 'update'])->name('management.settings.room_types.update');
+    Route::post('management/settings/room_types', [RoomTypesController::class, 'store'])->name('management.settings.room_types.store');
+    Route::delete('management/settings/room_types/{room_type_id}', [RoomTypesController::class, 'destroy'])->name('management.settings.room_types.destroy');
 
     Route::get('management/settings/profile', [ProfileController::class, 'edit'])->name('management.settings.profile.edit');
     Route::patch('management/settings/profile/verify-password', [ProfileController::class, 'verifyPassword'])->name('management.settings.profile.verify-password');
