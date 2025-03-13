@@ -20,7 +20,7 @@ class AppearanceController extends Controller
             $settings = Settings::where('user_id', $user->id)->first();
 
             $oldTheme = $settings->theme;
-
+            $newTheme = $request->theme;
             $settings->update($request->all());
 
             AuditLog::create([
@@ -28,7 +28,7 @@ class AppearanceController extends Controller
                 'record_id' => $settings->setting_id,
                 'action' => 'UPDATE',
                 'old_value' => json_encode($oldTheme),
-                'new_value' => json_encode($request->all()),
+                'new_value' => json_encode($newTheme),
                 'changed_by' => Auth::user()->username,
                 'column_affected' => 'theme',
             ]);
@@ -55,12 +55,21 @@ class AppearanceController extends Controller
         return response()->json($settings);
     }
 
-    public function renderAppearancePage()
+    public function renderReceptionAppearancePage()
     {
         $user = Auth::user();
         $settings = Settings::where('user_id', $user->id)->first();
         $userTheme = $settings ? $settings->theme : null;
 
         return Inertia::render('reception/settings/appearance', ['user_theme' => $userTheme]);
+    }
+
+    public function renderManagementAppearancePage()
+    {
+        $user = Auth::user();
+        $settings = Settings::where('user_id', $user->id)->first();
+        $userTheme = $settings ? $settings->theme : null;
+
+        return Inertia::render('management/settings/appearance', ['user_theme' => $userTheme]);
     }
 }
