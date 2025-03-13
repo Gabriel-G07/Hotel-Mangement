@@ -26,6 +26,7 @@ export default function Rooms({ rooms, roomTypes, baseCurrency }: RoomsProps) {
         room_type_id: '',
         price_per_night: '',
         room_id: '',
+        currency_id: baseCurrency?.currency_id || '',
     });
 
     const [isEditing, setIsEditing] = React.useState(false);
@@ -46,6 +47,7 @@ export default function Rooms({ rooms, roomTypes, baseCurrency }: RoomsProps) {
                         room_type_id: '',
                         price_per_night: '',
                         room_id: '',
+                        currency_id: baseCurrency?.currency_id || '',
                     });
                 },
                 onError: (errors) => {
@@ -62,6 +64,7 @@ export default function Rooms({ rooms, roomTypes, baseCurrency }: RoomsProps) {
                         room_type_id: '',
                         price_per_night: '',
                         room_id: '',
+                        currency_id: baseCurrency?.currency_id || '',
                     });
                 },
                 onError: (errors) => {
@@ -80,6 +83,7 @@ export default function Rooms({ rooms, roomTypes, baseCurrency }: RoomsProps) {
             room_type_id: room.room_type_id,
             price_per_night: room.price_per_night,
             room_id: room.room_id,
+            currency_id: baseCurrency?.currency_id || '',
         });
     };
 
@@ -91,6 +95,7 @@ export default function Rooms({ rooms, roomTypes, baseCurrency }: RoomsProps) {
             room_type_id: '',
             price_per_night: '',
             room_id: '',
+            currency_id: baseCurrency?.currency_id || '',
         });
     };
 
@@ -186,7 +191,7 @@ export default function Rooms({ rooms, roomTypes, baseCurrency }: RoomsProps) {
                                 <TableRow>
                                     <TableCell>Room Number</TableCell>
                                     <TableCell>Room Type</TableCell>
-                                    <TableCell>Price Per Night ({baseCurrency?.currency_code})</TableCell>
+                                    <TableCell>Price ({baseCurrency?.currency_code})</TableCell>
                                     <TableCell>Is Available</TableCell>
                                     <TableCell>Actions</TableCell>
                                 </TableRow>

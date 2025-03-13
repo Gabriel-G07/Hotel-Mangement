@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Log;
 
 class RoomsController extends Controller
 {
@@ -125,14 +126,6 @@ class RoomsController extends Controller
             return redirect()->route('management.settings.rooms.index')->with('error', 'Room not found.');
         }
 
-        $unassignedRoom = Rooms::where('room_name', 'Unassigned')->first();
-
-        if (!$unassignedRoom) {
-            return redirect()->route('management.settings.rooms.index')->with('error', 'Unassigned room not found. Please create it first.');
-        }
-
-        User::where('room_id', $room->room_id)->update(['room_id' => $unassignedRoom->room_id]);
-
         $oldValues = $room->toArray();
         $primaryKey = $room->getKeyName();
         $timestamps = ['created_at', 'updated_at'];
@@ -143,7 +136,7 @@ class RoomsController extends Controller
             if ($key !== $primaryKey && !in_array($key, $timestamps)) {
                 AuditLog::create([
                     'table_name' => 'rooms',
-                    'record_id' => $room->room_id,
+                    'record_id' => $room_id,
                     'action' => 'DELETE',
                     'old_value' => $value,
                     'changed_by' => Auth::user()->username,
@@ -152,6 +145,6 @@ class RoomsController extends Controller
             }
         }
 
-        return redirect()->route('management.settings.rooms.index')->with('success', 'Room deleted successfully. Users reassigned to the Unassigned room.');
+        return redirect()->route('management.settings.rooms.index')->with('success', 'Room deleted successfully.');
     }
 }

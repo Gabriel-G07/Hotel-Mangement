@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Log;
 
 class CurrencyController extends Controller
 {
@@ -31,12 +32,10 @@ class CurrencyController extends Controller
     {
         $validatedData = $request->validated();
 
-        if ($validatedData['is_base_currency']) {
-            Currency::where('is_base_currency', true)->update(['is_base_currency' => false]);
+        if (Currency::count() == 0) {
+            $validatedData['is_base_currency'] = true;
         } else {
-            if (Currency::where('is_base_currency', true)->count() == 0) {
-                $validatedData['is_base_currency'] = true;
-            }
+            $validatedData['is_base_currency'] = false;
         }
 
         Currency::create($validatedData);
@@ -57,11 +56,17 @@ class CurrencyController extends Controller
 
         $validatedData = $request->validated();
 
-        if ($validatedData['is_base_currency']) {
+        Log::info('Current Currency Data:', $currency->toArray());
+        Log::info('Incoming Data:', $validatedData);
+
+        if (isset($validatedData['is_base_currency']) && $validatedData['is_base_currency']) {
             Currency::where('is_base_currency', true)->update(['is_base_currency' => false]);
         }
 
         $currency->update($validatedData);
+
+        Log::info('Updated Currency Data:', $currency->fresh()->toArray());
+        Log::info('All Currencies:', Currency::all()->toArray());
 
         return redirect()->route('management.settings.currencies.index')->with('success', 'Currency updated successfully.');
     }

@@ -24,18 +24,11 @@ export default function Currencies({ currencies }: CurrenciesProps) {
         currency_code: '',
         currency_name: '',
         exchange_rate: '',
-        is_base_currency: false,
         currency_id: '',
     });
 
     const [isEditing, setIsEditing] = React.useState(false);
     const [selectedCurrency, setSelectedCurrency] = React.useState<any>(null);
-
-    useEffect(() => {
-        if (currencies.length > 0 && !currencies.some(currency => currency.is_base_currency)) {
-            setData('is_base_currency', true);
-        }
-    }, [currencies]);
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -51,7 +44,6 @@ export default function Currencies({ currencies }: CurrenciesProps) {
                         currency_code: '',
                         currency_name: '',
                         exchange_rate: '',
-                        is_base_currency: false,
                         currency_id: '',
                     });
                 },
@@ -68,7 +60,6 @@ export default function Currencies({ currencies }: CurrenciesProps) {
                         currency_code: '',
                         currency_name: '',
                         exchange_rate: '',
-                        is_base_currency: false,
                         currency_id: '',
                     });
                 },
@@ -87,7 +78,6 @@ export default function Currencies({ currencies }: CurrenciesProps) {
             currency_code: currency.currency_code,
             currency_name: currency.currency_name,
             exchange_rate: currency.exchange_rate,
-            is_base_currency: currency.is_base_currency,
             currency_id: currency.currency_id,
         });
     };
@@ -99,7 +89,6 @@ export default function Currencies({ currencies }: CurrenciesProps) {
             currency_code: '',
             currency_name: '',
             exchange_rate: '',
-            is_base_currency: false,
             currency_id: '',
         });
     };
@@ -168,18 +157,6 @@ export default function Currencies({ currencies }: CurrenciesProps) {
                                     placeholder="Exchange Rate"
                                 />
                                 {errors.exchange_rate && <InputError message={errors.exchange_rate} />}
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="is_base_currency">Is Base Currency</Label>
-                                <Input
-                                    id="is_base_currency"
-                                    type="checkbox"
-                                    className="mt-1 block"
-                                    checked={data.is_base_currency}
-                                    onChange={(e) => setData('is_base_currency', e.target.checked)}
-                                />
-                                {errors.is_base_currency && <InputError message={errors.is_base_currency} />}
                             </div>
 
                             {isEditing ? (

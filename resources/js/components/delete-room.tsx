@@ -17,7 +17,7 @@ export default function DeleteRoom({ room }: DeleteRoomProps) {
     const deleteRoom: FormEventHandler = (e) => {
         e.preventDefault();
 
-        destroy(route('rooms.destroy', room.room_id), {
+        destroy(route('management.settings.rooms.destroy', room.room_id), {
             preserveScroll: true,
             onSuccess: () => reset(),
             onError: (error) => {

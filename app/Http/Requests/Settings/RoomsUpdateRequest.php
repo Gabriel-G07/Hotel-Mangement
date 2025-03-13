@@ -18,7 +18,7 @@ class RoomsUpdateRequest extends FormRequest
     {
         return [
             'room_number' => ['nullable', 'string', 'max:255'],
-            'room_type_id' => ['nullable', 'string', 'max:255'],
+            'room_type_id' => ['required', 'exists:room_types,room_type_id'],
             'price_per_night' => ['required', 'string', 'max:255'],
             'currency_id' => ['required', 'exists:currencies,currency_id'],
         ];

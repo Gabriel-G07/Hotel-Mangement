@@ -31,4 +31,9 @@ class Rooms extends Model
     {
         return $this->belongsTo(RoomTypes::class, 'room_type_id');
     }
+
+    public function currency()
+    {
+        return $this->belongsTo(Currency::class, 'currency_id');
+    }
 }
