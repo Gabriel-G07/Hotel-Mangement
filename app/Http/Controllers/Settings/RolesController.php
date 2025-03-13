@@ -19,7 +19,7 @@ class RolesController extends Controller
     /**
      * Show the roles settings page.
      */
-    public function index(Request $request): Response
+    public function index(): Response
     {
         $roles = Roles::whereNotIn('role_name', ['Unassigned', 'Developer'])->get();
 

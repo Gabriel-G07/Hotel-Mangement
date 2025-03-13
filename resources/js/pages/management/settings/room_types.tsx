@@ -1,10 +1,9 @@
-// Roles.tsx
 import React, { useEffect } from 'react';
 import { type BreadcrumbItem, type SharedData } from '@/types';
 import { Transition } from '@headlessui/react';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
-import DeleteRole from '@/components/delete-role';
+import DeleteRoomType from '@/components/delete-room-type';
 import HeadingSmall from '@/components/heading-small';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -15,101 +14,101 @@ import SettingsLayout from '@/layouts/settings/management_layout';
 import { ActionMessage } from '@/components/ui/action-message';
 import { Table, TableHead, TableCell, TableBody, TableRow } from '@/components/ui/table';
 
-interface RolesProps {
-    roles: any[];
+interface RoomTypesProps {
+    roomTypes: any[];
 }
 
-export default function Roles({ roles }: RolesProps) {
+export default function RoomTypes({ roomTypes }: RoomTypesProps) {
     const { data, setData, post, patch, delete: destroy, errors, processing, recentlySuccessful } = useForm({
-        role_name: '',
+        room_type_name: '',
         description: '',
-        role_id: '',
+        room_type_id: '',
     });
 
     const [isEditing, setIsEditing] = React.useState(false);
-    const [selectedRole, setSelectedRole] = React.useState<any>(null);
+    const [selectedRoomType, setSelectedRoomType] = React.useState<any>(null);
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
 
         if (isEditing) {
-            patch(route('management.settings.roles.update', selectedRole?.role_id), {
+            patch(route('management.settings.room_types.update', selectedRoomType?.room_type_id), {
                 data,
                 preserveScroll: true,
                 onSuccess: () => {
                     setIsEditing(false);
-                    setSelectedRole(null);
+                    setSelectedRoomType(null);
                     setData({
-                        role_name: '',
+                        room_type_name: '',
                         description: '',
-                        role_id: '',
+                        room_type_id: '',
                     });
                 },
                 onError: (errors) => {
-                    console.error('Error updating role:', errors);
+                    console.error('Error updating room type:', errors);
                 },
             });
         } else {
-            post(route('management.settings.roles.store'), {
+            post(route('management.settings.room_types.store'), {
                 data,
                 preserveScroll: true,
                 onSuccess: () => {
                     setData({
-                        role_name: '',
+                        room_type_name: '',
                         description: '',
-                        role_id: '',
+                        room_type_id: '',
                     });
                 },
                 onError: (errors) => {
-                    console.error('Error creating role:', errors);
+                    console.error('Error creating room type:', errors);
                 },
             });
         }
     };
 
-    const handleEdit = (e: React.MouseEvent, role: any) => {
+    const handleEdit = (e: React.MouseEvent, roomType: any) => {
         e.preventDefault();
         setIsEditing(true);
-        setSelectedRole(role);
+        setSelectedRoomType(roomType);
         setData({
-            role_name: role.role_name,
-            description: role.description,
-            role_id: role.role_id,
+            room_type_name: roomType.room_type_name,
+            description: roomType.description,
+            room_type_id: roomType.room_type_id,
         });
     };
 
     const handleCancel = () => {
         setIsEditing(false);
-        setSelectedRole(null);
+        setSelectedRoomType(null);
         setData({
-            role_name: '',
+            room_type_name: '',
             description: '',
-            role_id: '',
+            room_type_id: '',
         });
     };
 
     return (
-        <AppLayout breadcrumbs={[{ title: 'Roles settings', href: route('management.settings.roles.index') }]}>
-            <Head title="Roles settings" />
+        <AppLayout breadcrumbs={[{ title: 'Room Types settings', href: route('management.settings.room_types.index') }]}>
+            <Head title="Room Types settings" />
 
             <SettingsLayout>
                 <div className="space-y-6 flex flex-col lg:flex-row">
                     <div className="w-full lg:w-1/2">
-                        <HeadingSmall title="Roles information" description="Add, Edit or Remove Roles" />
+                        <HeadingSmall title="Room Types information" description="Add, Edit or Remove Room Types" />
                         <div className="md:max-w-2xl max-w-xl">
                         <form onSubmit={submit} className="space-y-6">
                             <div className="grid gap-2">
-                                <Label htmlFor="role_name">Role Name</Label>
+                                <Label htmlFor="room_type_name">Room Type Name</Label>
                                 <Input
-                                    id="role_name"
+                                    id="room_type_name"
                                     className="mt-1 block w-full"
-                                    value={data.role_name}
-                                    onChange={(e) => setData('role_name', e.target.value)}
+                                    value={data.room_type_name}
+                                    onChange={(e) => setData('room_type_name', e.target.value)}
                                     required
-                                    autoComplete="role_name"
-                                    placeholder="Role Name"
+                                    autoComplete="room_type_name"
+                                    placeholder="Room Type Name"
                                 />
-                                {errors.role_name && <InputError message={errors.role_name} />}
+                                {errors.room_type_name && <InputError message={errors.room_type_name} />}
                             </div>
 
                             <div className="grid gap-2">
@@ -119,7 +118,6 @@ export default function Roles({ roles }: RolesProps) {
                                     className="mt-1 block w-full"
                                     value={data.description}
                                     onChange={(e) => setData('description', e.target.value)}
-                                    required
                                     autoComplete="description"
                                     placeholder="Description"
                                 />
@@ -129,7 +127,7 @@ export default function Roles({ roles }: RolesProps) {
                             {isEditing ? (
                                 <div className="flex items-center gap-4">
                                     <Button type="submit" disabled={processing}>
-                                        Update Role
+                                        Update Room Type
                                     </Button>
                                     <Button type="button" onClick={handleCancel}>
                                         Cancel
@@ -138,7 +136,7 @@ export default function Roles({ roles }: RolesProps) {
                             ) : (
                                 <div className="flex items-center gap-4">
                                     <Button type="submit" disabled={processing}>
-                                        Add Role
+                                        Add Room Type
                                     </Button>
                                     <Transition
                                         show={recentlySuccessful}
@@ -156,30 +154,30 @@ export default function Roles({ roles }: RolesProps) {
                     </div>
 
                     <div className="w-full lg:w-1/2 mt-6 lg:mt-0">
-                        <Table data={roles}>
+                        <Table data={roomTypes}>
                             <TableHead>
                                 <TableRow>
-                                    <TableCell>Role Name</TableCell>
+                                    <TableCell>Room Type Name</TableCell>
                                     <TableCell>Description</TableCell>
-                                <TableCell>Actions</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {roles.map((role, index) => (
-                                <TableRow key={role.role_id} index={index}>
-                                    <TableCell>{role.role_name}</TableCell>
-                                    <TableCell>{role.description}</TableCell>
-                                    <TableCell className="flex flex-col items-center">
-                                        <Button variant="link" onClick={(e) => handleEdit(e, role)}>Edit</Button>
-                                        <DeleteRole role={role} />
-                                    </TableCell>
+                                    <TableCell>Actions</TableCell>
                                 </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+                            </TableHead>
+                            <TableBody>
+                                {roomTypes.map((roomType, index) => (
+                                    <TableRow key={roomType.room_type_id} index={index}>
+                                        <TableCell>{roomType.room_type_name}</TableCell>
+                                        <TableCell>{roomType.description}</TableCell>
+                                        <TableCell className="flex flex-col items-center">
+                                            <Button variant="link" onClick={(e) => handleEdit(e, roomType)}>Edit</Button>
+                                            <DeleteRoomType roomType={roomType} />
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
                 </div>
-            </div>
-        </SettingsLayout>
-    </AppLayout>
-);
+            </SettingsLayout>
+        </AppLayout>
+    );
 }

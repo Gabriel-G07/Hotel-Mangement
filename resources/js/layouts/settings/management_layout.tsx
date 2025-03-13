@@ -32,6 +32,21 @@ const sidebarNavItems: NavItem[] = [
         url: '/management/settings/activities',
         icon: null,
     },
+    {
+        title: 'Rooms',
+        url: '/management/settings/rooms',
+        icon: null,
+    },
+    {
+        title: 'Room Types',
+        url: '/management/settings/room_types',
+        icon: null,
+    },
+    {
+        title: 'Currencies',
+        url: '/management/settings/currencies',
+        icon: null,
+    },
 ];
 
 export default function ManagementSettingsLayout({ children }: PropsWithChildren) {

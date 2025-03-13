@@ -81,7 +81,7 @@ export default function AddUsers({ roles }: AddUsersProps) {
                         />
                         <input
                             type="text"
-                            name="national_id_number" // Add this input
+                            name="national_id_number"
                             value={user.national_id_number}
                             onChange={handleChange}
                             placeholder="National ID Number"
