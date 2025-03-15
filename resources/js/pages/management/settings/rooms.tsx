@@ -13,6 +13,7 @@ import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/management_layout';
 import { ActionMessage } from '@/components/ui/action-message';
 import { Table, TableHead, TableCell, TableBody, TableRow } from '@/components/ui/table';
+import { CustomSelect } from '@/components/ui/custom-select';
 
 interface RoomsProps {
     rooms: any[];
@@ -125,20 +126,18 @@ export default function Rooms({ rooms, roomTypes, baseCurrency }: RoomsProps) {
 
                             <div className="grid gap-2">
                                 <Label htmlFor="room_type_id">Room Type</Label>
-                                <select
+                                <CustomSelect
                                     id="room_type_id"
-                                    className="mt-1 block w-full"
+                                    name="room_type_id"
                                     value={data.room_type_id}
                                     onChange={(e) => setData('room_type_id', e.target.value)}
+                                    options={roomTypes.map((roomType) => ({
+                                        value: roomType.room_type_id,
+                                        label: roomType.room_type_name
+                                    }))}
+                                    placeholder="Select Room Type"
                                     required
-                                >
-                                    <option value="">Select Room Type</option>
-                                    {roomTypes.map((roomType) => (
-                                        <option key={roomType.room_type_id} value={roomType.room_type_id}>
-                                            {roomType.room_type_name}
-                                        </option>
-                                    ))}
-                                </select>
+                                />
                                 {errors.room_type_id && <InputError message={errors.room_type_id} />}
                             </div>
 

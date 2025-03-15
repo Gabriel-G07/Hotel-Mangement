@@ -39,9 +39,8 @@ Route::middleware(['auth', 'verified', CheckManagerRole::class])->group(function
         Route::get('/management/users/list', [ManagementUsersController::class, 'index'])->name('management.users.users_list');
         Route::post('/management/users', [ManagementUsersController::class, 'store'])->name('management.users.add_users');
         Route::get('/management/users/add', [ManagementUsersController::class, 'create'])->name('management.users.add_users');
-        Route::get('/management/users/activate', function () {
-            return Inertia::render('management/users/verify_users');
-        })->name('management.users.verify_users');
+        Route::get('/management/users/activate', [ManagementUsersController::class, 'unverified'])->name('management.users.verify_users');
+        Route::post('/management/users/verify/{user}', [ManagementUsersController::class, 'verify'])->name('management.users.verify');
         Route::get('/management/users/{user}', [ManagementUsersController::class, 'show'])->name('management.users.users.show');
     });
 

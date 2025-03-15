@@ -4,6 +4,8 @@ import { type BreadcrumbItem } from '@/types';
 import AppLayout from '@/layouts/app-layout';
 import UsersLayout from '@/pages/management/users';
 import HeadingSmall from '@/components/heading-small';
+import { useAppearance } from '@/hooks/use-appearance';
+import { CustomSelect } from '@/components/ui/custom-select';
 
 interface Role {
     role_id: number;
@@ -11,7 +13,7 @@ interface Role {
 }
 
 interface AddUsersProps {
-    roles: Role;
+    roles: Role[];
 }
 
 const breadcrumbs: BreadcrumbItem= [
@@ -28,8 +30,10 @@ export default function AddUsers({ roles }: AddUsersProps) {
         phone_number: '',
         email: '',
         role_id: '',
-        national_id_number: '', // Add national_id_number
+        national_id_number: '',
     });
+
+    const { appearance } = useAppearance();
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         setUser({ ...user, [e.target.name]: e.target.value });
@@ -37,7 +41,8 @@ export default function AddUsers({ roles }: AddUsersProps) {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        router.post('/management/users', user);
+        const formData = { ...user, role_id: user.role_id || null };
+        router.post('/management/users', formData);
     };
 
     return (
@@ -87,19 +92,16 @@ export default function AddUsers({ roles }: AddUsersProps) {
                             placeholder="National ID Number"
                             className="w-full p-2 border rounded"
                         />
-                        <select
+                        <CustomSelect
                             name="role_id"
                             value={user.role_id}
                             onChange={handleChange}
-                            className="w-full p-2 border rounded"
-                        >
-                            <option value="">Select Role</option>
-                            {roles.map((role) => (
-                                <option key={role.role_id} value={role.role_id}>
-                                    {role.role_name}
-                                </option>
-                            ))}
-                        </select>
+                            options={roles.filter(role => role.role_name !== 'Unassigned').map(role => ({
+                                value: role.role_id,
+                                label: role.role_name
+                            }))}
+                            placeholder="Select Role"
+                        />
                         <button type="submit" className="bg-blue-500 text-white p-2 rounded">
                             Add User
                         </button>

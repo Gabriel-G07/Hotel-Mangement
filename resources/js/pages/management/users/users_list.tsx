@@ -1,14 +1,19 @@
 import React, { useState } from 'react';
-import { Head, router } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 import { type BreadcrumbItem } from '@/types';
 import AppLayout from '@/layouts/app-layout';
 import UsersLayout from '@/pages/management/users';
 import { Table, TableHead, TableCell, TableBody, TableRow } from '@/components/ui/table';
 import HeadingSmall from '@/components/heading-small';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { CustomSelect } from '@/components/ui/custom-select';
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 
 interface UsersListProps {
-    users: { id: number; first_name: string; last_name: string; role: string }[];
-    selectedUser?: any;
+    users: { id: number; first_name: string; last_name: string; role: string; is_verified: boolean }[];
+    roles: { role_id: number; role_name: string }[];
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -18,20 +23,20 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function UsersList({ users, selectedUser }: UsersListProps) {
-    const [selectedUserId, setSelectedUserId] = useState<number | null>(selectedUser?.id || null);
+export default function UsersList({ users, roles }: UsersListProps) {
+    const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
     const [editMode, setEditMode] = useState(false);
-    const [editedUser, setEditedUser] = useState<any>(selectedUser || null);
+    const [editedUser, setEditedUser] = useState<any>(null);
 
     const handleUserClick = (userId: number) => {
+        const user = users.find(user => user.id === userId);
         setSelectedUserId(userId);
-        router.get(`/users/${userId}`);
+        setEditedUser(user);
         setEditMode(false);
     };
 
     const handleEditClick = () => {
         setEditMode(true);
-        setEditedUser(selectedUser);
     };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -39,15 +44,19 @@ export default function UsersList({ users, selectedUser }: UsersListProps) {
     };
 
     const handleSaveClick = () => {
-        router.put(`/users/${selectedUserId}`, editedUser);
+        // Save logic here
         setEditMode(false);
     };
 
-    const handleVerifyClick = () => {
-      router.post(`/users/verify/${selectedUserId}`);
-    }
+    const handleCancelClick = () => {
+        setEditMode(false);
+    };
 
-    const displayedUser = users?.find(user => user.id === selectedUserId);
+    const handleDeactivateClick = () => {
+        // Deactivate logic here
+    };
+
+    const displayedUser = users.find(user => user.id === selectedUserId);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -62,53 +71,80 @@ export default function UsersList({ users, selectedUser }: UsersListProps) {
                                     <TableCell>First Name</TableCell>
                                     <TableCell>Last Name</TableCell>
                                     <TableCell>Role</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {users.map((user) => (
+                                    <TableRow key={user.id} index={user.id} onClick={() => handleUserClick(user.id)}>
+                                        <TableCell>{user.first_name}</TableCell>
+                                        <TableCell>{user.last_name}</TableCell>
+                                        <TableCell>{user.role}</TableCell>
                                     </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {users && users.map((user) => (
-                                        <TableRow key={user.id} index={user.id} onClick={() => handleUserClick(user.id)}>
-                                            <TableCell>{user.first_name}</TableCell>
-                                            <TableCell>{user.last_name}</TableCell>
-                                            <TableCell>{user.role}</TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
+                                ))}
+                            </TableBody>
                         </Table>
-                        </div>
-                        {selectedUserId && displayedUser && (
-                        <div className="w-1/2">
-                            <HeadingSmall title="User Details" description="View user details." />
-                            {editMode ? (
-                            <div>
-                                <input type="text" name="first_name" value={editedUser?.first_name || ''} onChange={handleInputChange} placeholder="First Name" className="w-full p-2 border rounded mb-2" />
-                                <input type="text" name="last_name" value={editedUser?.last_name || ''} onChange={handleInputChange} placeholder="Last Name" className="w-full p-2 border rounded mb-2" />
-                                <input type="text" name="username" value={editedUser?.username || ''} onChange={handleInputChange} placeholder="Username" className="w-full p-2 border rounded mb-2" />
-                                <input type="text" name="email" value={editedUser?.email || ''} onChange={handleInputChange} placeholder="Email" className="w-full p-2 border rounded mb-2" />
-                                <input type="text" name="national_id_number" value={editedUser?.national_id_number || ''} onChange={handleInputChange} placeholder="National ID" className="w-full p-2 border rounded mb-2" />
-                                <input type="text" name="phone_number" value={editedUser?.phone_number || ''} onChange={handleInputChange} placeholder="Phone Number" className="w-full p-2 border rounded mb-2" />
-                                <select name="role_id" value={editedUser?.role_id || ''} onChange={handleInputChange} className="w-full p-2 border rounded mb-2">
-                                <option value="">Select Role</option>
-                                {/* Fetch roles from database and map here */}
-                                </select>
-                                <button onClick={handleSaveClick} className="bg-blue-500 text-white p-2 rounded">Save</button>
-                            </div>
-                            ) : (
-                            <div>
-                                <p><strong>First Name:</strong> {displayedUser.first_name}</p>
-                                <p><strong>Last Name:</strong> {displayedUser.last_name}</p>
-                                {selectedUser && <p><strong>Username:</strong> {selectedUser.username}</p>}
-                                <p><strong>Email:</strong> {selectedUser?.email}</p>
-                                <p><strong>National ID:</strong> {selectedUser?.national_id_number}</p>
-                                <p><strong>Phone Number:</strong> {selectedUser?.phone_number}</p>
-                                <p><strong>Role:</strong> {displayedUser.role}</p>
-                                <button onClick={handleEditClick} className="bg-green-500 text-white p-2 rounded">Edit Info</button>
-                                <button onClick={handleVerifyClick} className="bg-green-500 text-white p-2 rounded">Verify User</button>
-                            </div>
+                    </div>
+                    <div className="w-1/2">
+                        <HeadingSmall title="Selected User's Information" description="Click a user to see full information about that user." />
+                        {selectedUserId && displayedUser ? (
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>User Details</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    {editMode ? (
+                                        <div>
+                                            <Label htmlFor="first_name">First Name</Label>
+                                            <Input type="text" name="first_name" value={editedUser?.first_name || ''} onChange={handleInputChange} placeholder="First Name" className="w-full p-2 border rounded mb-2" />
+                                            <Label htmlFor="last_name">Last Name</Label>
+                                            <Input type="text" name="last_name" value={editedUser?.last_name || ''} onChange={handleInputChange} placeholder="Last Name" className="w-full p-2 border rounded mb-2" />
+                                            <Label htmlFor="username">Username</Label>
+                                            <Input type="text" name="username" value={editedUser?.username || ''} onChange={handleInputChange} placeholder="Username" className="w-full p-2 border rounded mb-2" />
+                                            <Label htmlFor="email">Email</Label>
+                                            <Input type="text" name="email" value={editedUser?.email || ''} onChange={handleInputChange} placeholder="Email" className="w-full p-2 border rounded mb-2" />
+                                            <Label htmlFor="national_id_number">National ID</Label>
+                                            <Input type="text" name="national_id_number" value={editedUser?.national_id_number || ''} onChange={handleInputChange} placeholder="National ID" className="w-full p-2 border rounded mb-2" />
+                                            <Label htmlFor="phone_number">Phone Number</Label>
+                                            <Input type="text" name="phone_number" value={editedUser?.phone_number || ''} onChange={handleInputChange} placeholder="Phone Number" className="w-full p-2 border rounded mb-2" />
+                                            <Label htmlFor="role_id">Role</Label>
+                                            <CustomSelect name="role_id" value={editedUser?.role_id || ''} onChange={handleInputChange} options={roles.map(role => ({
+                                                value: role.role_id,
+                                                label: role.role_name
+                                            }))} placeholder="Select Role" className="w-full p-2 border rounded mb-2" />
+                                            <Button onClick={handleSaveClick} className="bg-blue-500 text-white p-2 rounded">Save</Button>
+                                            <Button onClick={handleCancelClick} className="bg-gray-500 text-white p-2 rounded">Cancel</Button>
+                                        </div>
+                                    ) : (
+                                        <div>
+                                            <p><strong>First Name:</strong> {displayedUser.first_name}</p>
+                                            <p><strong>Last Name:</strong> {displayedUser.last_name}</p>
+                                            <p><strong>Username:</strong> {displayedUser.username}</p>
+                                            <p><strong>Email:</strong> {displayedUser.email}</p>
+                                            <p><strong>National ID:</strong> {displayedUser.national_id_number}</p>
+                                            <p><strong>Phone Number:</strong> {displayedUser.phone_number}</p>
+                                            <p><strong>Role:</strong> {displayedUser.role}</p>
+                                            <Button onClick={handleEditClick} className="bg-green-500 text-white p-2 rounded">Edit Info</Button>
+                                            <Button onClick={handleDeactivateClick} className="bg-red-500 text-white p-2 rounded">Deactivate User</Button>
+                                        </div>
+                                    )}
+                                </CardContent>
+                                <CardFooter>
+                                    <Button onClick={() => setSelectedUserId(null)} className="bg-gray-500 text-white p-2 rounded">Close</Button>
+                                </CardFooter>
+                            </Card>
+                        ) : (
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Selected User's Information</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <p>Click a user to see full information about that user.</p>
+                                </CardContent>
+                            </Card>
                         )}
                     </div>
-                )}
-            </div>
-        </UsersLayout>
+                </div>
+            </UsersLayout>
         </AppLayout>
     );
-    }
+}

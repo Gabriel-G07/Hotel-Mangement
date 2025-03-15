@@ -22,16 +22,39 @@ class ManagementUsersController extends Controller
      */
     public function index(): Response
     {
-        $users = User::with('role')->get()->map(function ($user) {
+        $users = User::with('role')->where('is_verified', true)->get()->filter(function ($user) {
+            return $user->role && $user->role->role_name !== 'Developer';
+        })->map(function ($user) {
             return [
                 'id' => $user->id,
                 'first_name' => $user->first_name,
                 'last_name' => $user->last_name,
                 'role' => $user->role ? $user->role->role_name : 'Unassigned',
+                'is_verified' => $user->is_verified,
             ];
-        });
+        })->values();
 
         return Inertia::render('management/users/users_list', ['users' => $users]);
+    }
+
+    /**
+     * Display a listing of unverified users.
+     */
+    public function unverified(): Response
+    {
+        $users = User::with('role')->where('is_verified', false)->get()->filter(function ($user) {
+            return $user->role && $user->role->role_name !== 'Developer';
+        })->map(function ($user) {
+            return [
+                'id' => $user->id,
+                'first_name' => $user->first_name,
+                'last_name' => $user->last_name,
+                'role' => $user->role ? $user->role->role_name : 'Unassigned',
+                'is_verified' => $user->is_verified,
+            ];
+        })->values();
+
+        return Inertia::render('management/users/verify_users', ['users' => $users]);
     }
 
     /**
@@ -39,7 +62,7 @@ class ManagementUsersController extends Controller
      */
     public function create(): Response
     {
-        $roles = Roles::all();
+        $roles = Roles::where('role_name', '!=', 'Developer')->get();
         return Inertia::render('management/users/add_users', ['roles' => $roles]);
     }
 
@@ -127,9 +150,29 @@ class ManagementUsersController extends Controller
             'new_value' => 'Verifying user',
             'changed_by' => Auth::user()->username,
             'column_affected' => 'is_verified',
+            'record_id' => $user->id, // Add this line to include the record_id
         ]);
 
-        return redirect()->route('management.users.users_list')->with('success', 'User verified successfully.');
+        return redirect()->route('management.users.verify_users')->with('success', 'User verified successfully.');
+    }
+
+    /**
+     * Deactivate the specified user.
+     */
+    public function deactivate(User $user): RedirectResponse
+    {
+        $user->update(['is_verified' => false]);
+
+        AuditLog::create([
+            'table_name' => 'users',
+            'action' => 'UPDATE',
+            'old_value' => $user->first_name . ' ' . $user->last_name,
+            'new_value' => 'Deactivating user',
+            'changed_by' => Auth::user()->username,
+            'column_affected' => 'is_verified',
+        ]);
+
+        return redirect()->route('management.users.users_list')->with('success', 'User deactivated successfully.');
     }
 
     /**

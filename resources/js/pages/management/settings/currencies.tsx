@@ -14,6 +14,7 @@ import SettingsLayout from '@/layouts/settings/management_layout';
 import { ActionMessage } from '@/components/ui/action-message';
 import { Table, TableHead, TableCell, TableBody, TableRow } from '@/components/ui/table';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { useAppearance } from '@/hooks/use-appearance';
 
 interface CurrenciesProps {
     currencies: any[];
@@ -29,6 +30,7 @@ export default function Currencies({ currencies }: CurrenciesProps) {
 
     const [isEditing, setIsEditing] = React.useState(false);
     const [selectedCurrency, setSelectedCurrency] = React.useState<any>(null);
+    const { appearance } = useAppearance();
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -227,7 +229,7 @@ export default function Currencies({ currencies }: CurrenciesProps) {
                             Select a new base currency from the list below.
                         </DialogDescription>
                         <select
-                            className="mt-1 block w-full"
+                            className="mt-1 block w-full bg-background text-foreground rounded-md"
                             onChange={handleBaseCurrencyChange}
                         >
                             <option value="">Select Base Currency</option>
