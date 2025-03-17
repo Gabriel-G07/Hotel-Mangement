@@ -27,9 +27,9 @@ return new class extends Migration
             $table->string('national_id_number')->unique();
             $table->string('first_name');
             $table->string('last_name');
-            $table->string('address')->nullable();
             $table->string('phone_number', 15);
             $table->string('profile_picture')->nullable();
+            $table->string('address')->nullable();
             $table->boolean('is_verified')->default(false);
             $table->foreignId('role_id')->constrained('user_roles', 'role_id')->onDelete('cascade');
             $table->timestamp('email_verified_at')->nullable();
@@ -131,11 +131,13 @@ return new class extends Migration
             $table->decimal('total_price', 10, 2);
             $table->unsignedBigInteger('currency_id');
             $table->enum('booking_status', ['Pending', 'Confirmed', 'Cancelled'])->default('Pending');
+            $table->unsignedBigInteger('booker_id');
             $table->timestamps();
 
             $table->foreign('room_id')->references('room_id')->on('rooms');
             $table->foreign('guest_id')->references('username')->on('users');
             $table->foreign('currency_id')->references('currency_id')->on('currencies');
+            $table->foreign('booker_id')->references('id')->on('users');
         });
 
         // Create the 'payment_methods' table

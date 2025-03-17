@@ -10,8 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Inertia\Response;
-use App\Models\Settings; // Import Settings model
-use Illuminate\Support\Facades\Log; // Import Log facade
+use App\Models\Settings;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -40,7 +39,6 @@ class AuthenticatedSessionController extends Controller
         $settings = Settings::where('user_id', $user->id)->first();
         $userTheme = $settings ? $settings->theme : 'system';
         session(['user_theme' => $userTheme]);
-        Log::info('User theme on login:', ['user_id' => $user->id, 'theme' => $userTheme]);
 
         // Role-based redirection
         return $this->redirectBasedOnRole();

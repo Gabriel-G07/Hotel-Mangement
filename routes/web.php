@@ -1,6 +1,10 @@
 <?php
 
 use App\Http\Controllers\management\ManagementUsersController;
+use App\Http\Controllers\management\BookingsController as ManagementBookingsController;
+use App\Http\Controllers\reception\BookingsController as ReceptionBookingsController;
+use App\Http\Controllers\reception\ReceptionUsersController;
+use App\Http\Controllers\Settings\RoomsController;
 use App\Http\Middleware\CheckReceptionistRole;
 use App\Http\Middleware\CheckManagerRole;
 use Illuminate\Support\Facades\Route;
@@ -17,9 +21,7 @@ Route::middleware(['auth', 'verified', CheckManagerRole::class])->group(function
         return Inertia::render('management/dashboard');
     })->name('management.dashboard');
 
-    Route::get('management/bookings', function () {
-        return Inertia::render('management/bookings');
-    })->name('management.bookings');
+    Route::get('management/bookings', [ManagementBookingsController::class, 'index'])->name('management.bookings');
 
     Route::get('management/accounting', function () {
         return Inertia::render('management/accounting');
@@ -54,10 +56,9 @@ Route::middleware(['auth', 'verified', CheckReceptionistRole::class])->group(fun
     Route::get('reception/dashboard', function () {
         return Inertia::render('reception/dashboard');
     })->name('reception.dashboard');
-
-    Route::get('reception/bookings', function () {
-        return Inertia::render('reception/bookings');
-    })->name('reception.bookings');
+    Route::get('reception/rooms-and-types', [ReceptionBookingsController::class, 'roomsAndTypes'])->name('reception.rooms-and-types');
+    Route::get('reception/bookings', [ReceptionBookingsController::class, 'create'])->name('reception.bookings');
+    Route::post('reception/book', [ReceptionBookingsController::class, 'store'])->name('reception.bookings.store');
 
     Route::get('reception/payments', function () {
         return Inertia::render('reception/payments');
@@ -78,13 +79,15 @@ Route::middleware(['auth', 'verified', CheckReceptionistRole::class])->group(fun
     Route::middleware('auth')->group(function () {
         Route::redirect('users', 'users/list');
 
-        Route::get('reception//users/list', [ManagementUsersController::class, 'index'])->name('reception.users.users_list');
+        Route::get('reception/users/list', [ManagementUsersController::class, 'index'])->name('reception.users.users_list');
         Route::post('/users', [ManagementUsersController::class, 'store'])->name('reception.users.add_users');
         Route::get('reception/users/add', [ManagementUsersController::class, 'create'])->name('reception.users.add_users');
         Route::get('reception/users/activate', function () {
             return Inertia::render('reception/users/verify_users');
         })->name('reception.users.verify_users');
         Route::get('reception/users/{user}', [ManagementUsersController::class, 'show'])->name('reception.users.users.show');
+        Route::get('reception/users/suggestions', [ReceptionUsersController::class, 'suggestions'])->name('reception.users.suggestions');
+        Route::get('reception/users', [ReceptionUsersController::class, 'index'])->name('reception.users.index');
     });
 
     Route::get('reception/user_info', function () {

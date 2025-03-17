@@ -96,7 +96,7 @@ export default function AddUsers({ roles }: AddUsersProps) {
                             name="role_id"
                             value={user.role_id}
                             onChange={handleChange}
-                            options={roles.filter(role => role.role_name !== 'Unassigned').map(role => ({
+                            options={roles.filter(role => role.role_name).map(role => ({
                                 value: role.role_id,
                                 label: role.role_name
                             }))}

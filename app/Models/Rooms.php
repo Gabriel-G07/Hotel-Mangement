@@ -16,6 +16,7 @@ class Rooms extends Model
         'room_type_id',
         'price_per_night',
         'currency_id',
+        'is_available',
     ];
 
     protected $table = 'rooms';

@@ -82,7 +82,7 @@ class RegisteredUserController extends Controller
         Settings::firstOrCreate(
             ['user_id' => $user->id],
             [
-                'theme' => 'light',
+                'theme' => 'system',
                 'screen_timeout' => 30,
                 'font_style' => 'sans-serif',
                 'font_size' => 16,

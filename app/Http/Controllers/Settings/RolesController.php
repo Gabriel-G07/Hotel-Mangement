@@ -21,7 +21,7 @@ class RolesController extends Controller
      */
     public function index(): Response
     {
-        $roles = Roles::whereNotIn('role_name', ['Unassigned', 'Developer'])->get();
+        $roles = Roles::whereNotIn('role_name', ['Unassigned', 'Developer', 'Guest'])->get();
 
         return Inertia::render('management/settings/roles', [
             'roles' => $roles,

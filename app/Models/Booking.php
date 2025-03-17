@@ -15,7 +15,8 @@ class Booking extends Model
         'check_in',
         'check_out',
         'total_cost',
-        'is_paid'
+        'is_paid',
+        'booker_id'
     ];
 
     public function room()
@@ -25,7 +26,7 @@ class Booking extends Model
 
     public function guest()
     {
-        return $this->belongsTo(Guest::class);
+        return $this->belongsTo(User::class);
     }
 
     public function orders()
@@ -36,5 +37,10 @@ class Booking extends Model
     public function payments()
     {
         return $this->hasMany(Payment::class);
+    }
+
+    public function receptionist()
+    {
+        return $this->belongsTo(User::class, 'booker_id');
     }
 }

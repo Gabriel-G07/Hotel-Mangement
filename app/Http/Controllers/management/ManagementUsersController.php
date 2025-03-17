@@ -62,7 +62,7 @@ class ManagementUsersController extends Controller
      */
     public function create(): Response
     {
-        $roles = Roles::where('role_name', '!=', 'Developer')->get();
+        $roles = Roles::whereNotIn('role_name', ['Developer', 'Guest', 'Unassigned'])->get();
         return Inertia::render('management/users/add_users', ['roles' => $roles]);
     }
 
