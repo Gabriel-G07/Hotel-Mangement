@@ -96,7 +96,7 @@ class ManagementUsersController extends Controller
 
         // Optionally, you can send an email to the user with their username and password.
 
-        return redirect()->route('management.users.users_list')->with('success', 'User created successfully. Password: ' . $password); //Return the password for testing.
+        return redirect()->route('management.users.add_users')->with('success', 'User created successfully. Password: ' . $password); //Return the password for testing.
     }
 
     /**

@@ -1,13 +1,13 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import AppLayout from '@/layouts/app/reception/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/react';
-import axios from 'axios';
+import { Head, useForm } from '@inertiajs/react';
+import { Transition } from '@headlessui/react';
+import InputError from '@/components/input-error';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { CustomSelect } from '@/components/ui/custom-select';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -16,68 +16,72 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Bookings() {
-    const [nationalId, setNationalId] = useState('');
-    const [guestName, setGuestName] = useState('');
-    const [surname, setSurname] = useState('');
-    const [email, setEmail] = useState('');
-    const [phone, setPhone] = useState('');
-    const [homeAddress, setHomeAddress] = useState('');
-    const [roomTypes, setRoomTypes] = useState([]);
-    const [rooms, setRooms] = useState([]);
-    const [selectedRooms, setSelectedRooms] = useState([{ roomType: '', roomNumber: '', roomPrice: 0 }]);
-    const [checkInDate, setCheckInDate] = useState('');
-    const [checkOutDate, setCheckOutDate] = useState('');
-    const [price, setPrice] = useState(0);
-    const [roomOptions, setRoomOptions] = useState([]);
+interface BookingInfo {
+    guestNationalId: string;
+    guestName: string;
+    guestSurname: string;
+    guestemail: string;
+    guestphone: string;
+    guestAddress: string;
+    selectedRooms: string[];
+    checkInDate: Date;
+    checkOutDate: Date;
+}
+
+interface BookingsProps {
+    availableRoomTypes: any[];
+    availableRooms: any[];
+    availableGuests: any[];
+    bookingInfo: BookingInfo[];
+}
+
+export default function Bookings({ availableRoomTypes, availableRooms, availableGuests }: BookingsProps) {
+    const { data, setData, post, errors, processing, recentlySuccessful, reset } = useForm({
+        guestNationalId: '',
+        guestName: '',
+        guestSurname: '',
+        guestemail: '',
+        guestphone: '',
+        guestAddress: '',
+        selectedRooms: [] as string[],
+        checkInDate: '',
+        checkOutDate: '',
+    });
+
+    const [selectedRooms, setSelectedRooms] = useState([{ availableRoomType: '', roomNumber: '', roomPrice: '' }]);
     const [suggestedUsers, setSuggestedUsers] = useState([]);
+    const [roomOptions, setRoomOptions] = useState([]);
+    const [price, setPrice] = useState(0);
     const [users, setUsers] = useState([]);
     const [activeInput, setActiveInput] = useState('');
     const [availableRoomsCount, setAvailableRoomsCount] = useState({});
 
     useEffect(() => {
-        const fetchRoomsAndTypes = async () => {
-            try {
-                const response = await axios.get('/reception/rooms-and-types');
-                setRoomTypes(response.data.roomTypes);
-                setRooms(response.data.rooms);
-
-                // Calculate the number of available rooms for each room type
-                const count = {};
-                response.data.rooms.forEach(room => {
-                    if (room.is_available) {
-                        count[room.room_type_id] = (count[room.room_type_id] || 0) + 1;
-                    }
-                });
-                setAvailableRoomsCount(count);
-            } catch (error) {
-                console.error('Error fetching rooms and types:', error);
-                setRoomTypes([]);
-                setRooms([]);
-            }
+        const countRoomsAndTypes = async () => {
+            const count = {};
+            availableRooms.forEach(room => {
+                if (room.is_available) {
+                    count[room.room_type_id] = (count[room.room_type_id] || 0) + 1;
+                }
+            });
+            setAvailableRoomsCount(count);
         };
 
-        fetchRoomsAndTypes();
-    }, []);
+        countRoomsAndTypes();
+    }, [availableRooms]);
 
     useEffect(() => {
         const fetchUsers = async () => {
-            try {
-                const response = await axios.get('/reception/users');
-                if (Array.isArray(response.data)) {
-                    setUsers(response.data);
-                } else {
-                    setUsers([]);
-                    console.error('Unexpected response format:', response.data);
-                }
-            } catch (error) {
-                console.error('Error fetching users:', error);
+            if (Array.isArray(availableGuests)) {
+                setUsers(availableGuests);
+            } else {
                 setUsers([]);
+                console.error('Unexpected response format:', availableGuests);
             }
         };
 
         fetchUsers();
-    }, []);
+    }, [availableGuests]);
 
     const filterSuggestedUsers = (query) => {
         if (query.length === 0) {
@@ -92,42 +96,39 @@ export default function Bookings() {
         setSuggestedUsers(filteredUsers);
     };
 
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        const { name, value } = e.target;
+        setData(name, value);
+    };
+
     const handleInputChange = (e, inputType) => {
         const value = e.target.value;
         setActiveInput(inputType);
-
-        if (inputType === 'nationalId') {
-            setNationalId(value);
-        } else if (inputType === 'phone') {
-            setPhone(value);
-        }
-
+        setData(inputType, value);
         filterSuggestedUsers(value);
     };
 
     const handleAddRoom = () => {
-        setSelectedRooms([...selectedRooms, { roomType: '', roomNumber: '', roomPrice: 0 }]);
+        setSelectedRooms([...selectedRooms, { availableRoomType: '', roomNumber: '', roomPrice: '' }]);
     };
 
     const handleRoomTypeButtonClick = (index, roomTypeId) => {
         const newSelectedRooms = [...selectedRooms];
-        newSelectedRooms[index] = { ...newSelectedRooms[index], roomType: roomTypeId };
+        newSelectedRooms[index] = { ...newSelectedRooms[index], availableRoomType: roomTypeId };
 
-        // Filter the room options based on the selected room type
-        const filteredRooms = rooms.filter(room => room.room_type_id === roomTypeId);
+        const filteredRooms = availableRooms.filter(room => room.room_type_id === roomTypeId);
         setRoomOptions(filteredRooms.map(room => ({
-            value: room.room_id,
-            label: `${room.room_number} - ${room.price_per_night} per night`
+            value: room.room_number,
+            label: `${room.room_number} - ${room.price_per_night}`
         })));
 
-        // Automatically select a room number at random from the filtered list
         if (filteredRooms.length > 0) {
             const randomRoom = filteredRooms[Math.floor(Math.random() * filteredRooms.length)];
             newSelectedRooms[index].roomNumber = randomRoom.room_number;
             newSelectedRooms[index].roomPrice = randomRoom.price_per_night;
         } else {
             newSelectedRooms[index].roomNumber = '';
-            newSelectedRooms[index].roomPrice = 0;
+            newSelectedRooms[index].roomPrice = '';
         }
 
         setSelectedRooms(newSelectedRooms);
@@ -136,34 +137,25 @@ export default function Bookings() {
 
     const handleReselectRoom = (index) => {
         const newSelectedRooms = [...selectedRooms];
-        const roomTypeId = newSelectedRooms[index].roomType;
+        const roomTypeId = newSelectedRooms[index].availableRoomType;
 
-        // Filter the room options based on the selected room type
-        const filteredRooms = rooms.filter(room => room.room_type_id === roomTypeId);
+        const filteredRooms = availableRooms.filter(room => room.room_type_id === roomTypeId);
 
-        // Automatically select a room number at random from the filtered list
         if (filteredRooms.length > 0) {
             const randomRoom = filteredRooms[Math.floor(Math.random() * filteredRooms.length)];
             newSelectedRooms[index].roomNumber = randomRoom.room_number;
             newSelectedRooms[index].roomPrice = randomRoom.price_per_night;
         } else {
             newSelectedRooms[index].roomNumber = '';
-            newSelectedRooms[index].roomPrice = 0;
+            newSelectedRooms[index].roomPrice = '';
         }
 
         setSelectedRooms(newSelectedRooms);
         calculatePrice(newSelectedRooms);
     };
 
-    const handleRoomChange = (index, value) => {
-        const newSelectedRooms = [...selectedRooms];
-        newSelectedRooms[index] = { ...newSelectedRooms[index], roomNumber: value };
-        setSelectedRooms(newSelectedRooms);
-        calculatePrice(newSelectedRooms);
-    };
-
     const calculatePrice = (selectedRooms) => {
-        const totalPrice = selectedRooms.reduce((acc, room) => acc + (room.roomPrice || 0), 0);
+        const totalPrice = selectedRooms.reduce((acc, room) => acc + (parseFloat(room.roomPrice) || 0), 0);
         setPrice(totalPrice);
     };
 
@@ -173,41 +165,36 @@ export default function Bookings() {
         calculatePrice(newSelectedRooms);
     };
 
+    useEffect(() => {
+        const selectedRoomNumbers = selectedRooms.map(room => room.roomNumber);
+        setData('selectedRooms', selectedRoomNumbers);
+    }, [selectedRooms]);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-        try {
-            console.log('Submitting booking:', {
-                nationalId,
-                guestName,
-                surname,
-                email,
-                phone,
-                homeAddress,
-                selectedRooms,
-                checkInDate,
-                checkOutDate,
-                price,
-            });
-            const response = await axios.post('/reception/book', {
-                nationalId,
-                guestName,
-                surname,
-                email,
-                phone,
-                homeAddress,
-                selectedRooms,
-                checkInDate,
-                checkOutDate,
-                price,
-            });
-            if (response.status === 200) {
-                // Handle successful booking
-                alert('Booking successful!');
-            }
-        } catch (error) {
-            console.error('Error submitting booking:', error);
-            alert('Failed to submit booking.');
-        }
+
+        const selectedRoomNumbers = selectedRooms.map(room => room.roomNumber);
+
+        post(route('reception.bookings.store'), {
+            ...data,
+            selectedRooms: selectedRoomNumbers,
+        }, {
+            preserveScroll: true,
+            onSuccess: () => {
+                reset();
+                setSelectedRooms([{ availableRoomType: '', roomNumber: '', roomPrice: '' }]);
+                setPrice(0);
+            },
+            onError: (errors) => {
+                console.error('Error creating booking:', errors);
+            },
+        });
+    };
+
+    const handleCancel = () => {
+        reset();
+        setSelectedRooms([{ availableRoomType: '', roomNumber: '', roomPrice: '' }]);
+        setPrice(0);
     };
 
     return (
@@ -215,198 +202,231 @@ export default function Bookings() {
             <Head title="Bookings On Reception" />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Card>
-                        <form onSubmit={handleSubmit} className="space-y-4" autoComplete="off">
-                            <div className="grid gap-2">
-                                <Label htmlFor="nationalId">National ID Number</Label>
-                                <Input
-                                    id="nationalId"
-                                    value={nationalId}
-                                    onChange={(e) => handleInputChange(e, 'nationalId')}
-                                    required
-                                    placeholder="Enter National ID Number"
-                                    autoComplete="off"
-                                />
-                                {activeInput === 'nationalId' && suggestedUsers.length > 0 && (
-                                    <div className="bg-white dark:bg-gray-800 border rounded shadow p-2 mt-2">
-                                        {suggestedUsers.map(user => (
-                                            <div key={user.id} className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer" onClick={() => {
-                                                setNationalId(user.national_id_number || '');
-                                                setGuestName(user.first_name || '');
-                                                setSurname(user.last_name || '');
-                                                setEmail(user.email || '');
-                                                setPhone(user.phone_number || '');
-                                                setHomeAddress(user.address || '');
-                                                setSuggestedUsers([]);
-                                            }}>
-                                                {user.first_name} {user.last_name}
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="phone">Phone</Label>
-                                <Input
-                                    id="phone"
-                                    value={phone}
-                                    onChange={(e) => handleInputChange(e, 'phone')}
-                                    required
-                                    placeholder="Enter Phone Number"
-                                    autoComplete="off"
-                                />
-                                {activeInput === 'phone' && suggestedUsers.length > 0 && (
-                                    <div className="bg-white dark:bg-gray-800 border rounded shadow p-2 mt-2">
-                                        {suggestedUsers.map(user => (
-                                            <div key={user.id} className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer" onClick={() => {
-                                                setNationalId(user.national_id_number || '');
-                                                setGuestName(user.first_name || '');
-                                                setSurname(user.last_name || '');
-                                                setEmail(user.email || '');
-                                                setPhone(user.phone_number || '');
-                                                setHomeAddress(user.address || '');
-                                                setSuggestedUsers([]);
-                                            }}>
-                                                {user.first_name} {user.last_name}
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="guestName">Guest Name</Label>
-                                <Input
-                                    id="guestName"
-                                    value={guestName}
-                                    onChange={(e) => setGuestName(e.target.value)}
-                                    required
-                                    placeholder="Enter Guest Name"
-                                    autoComplete="off"
-                                />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="surname">Surname</Label>
-                                <Input
-                                    id="surname"
-                                    value={surname}
-                                    onChange={(e) => setSurname(e.target.value)}
-                                    required
-                                    placeholder="Enter Surname"
-                                    autoComplete="off"
-                                />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="email">Email</Label>
-                                <Input
-                                    id="email"
-                                    type="email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    required
-                                    placeholder="Enter Email"
-                                    autoComplete="off"
-                                />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="homeAddress">Home Address</Label>
-                                <Input
-                                    id="homeAddress"
-                                    value={homeAddress}
-                                    onChange={(e) => setHomeAddress(e.target.value)}
-                                    required
-                                    placeholder="Enter Home Address"
-                                    autoComplete="off"
-                                />
-                            </div>
-                        </form>
-                    </Card>
-                    <Card>
-                    <form onSubmit={handleSubmit} className="space-y-4" autoComplete="off">
-                            {selectedRooms.map((room, index) => (
-                                <div key={index} className="space-y-4">
-                                    <div className="grid gap-2">
-                                        <Label>Room Type</Label>
-                                        <div className="flex flex-wrap gap-2">
-                                            {roomTypes.map(roomType => (
-                                                <Button
-                                                    key={roomType.room_type_id}
-                                                    type="button"
-                                                    onClick={() => handleRoomTypeButtonClick(index, roomType.room_type_id)}
-                                                    className={room.roomType === roomType.room_type_id ? 'bg-blue-500 text-white' : 'bg-gray-200 dark:bg-gray-700'}
-                                                >
-                                                    {roomType.room_type_name} ({availableRoomsCount[roomType.room_type_id] || 0})
-                                                </Button>
+                    <form onSubmit={handleSubmit} autoComplete="off">
+                        <Card>
+                            <div className="space-y-4">
+                                <div className="grid gap-2">
+                                    <Label htmlFor="nationalId">National ID Number</Label>
+                                    <Input
+                                        id="nationalId"
+                                        name="guestNationalId"
+                                        value={data.guestNationalId}
+                                        onChange={handleChange}
+                                        required
+                                        placeholder="Enter National ID Number"
+                                        autoComplete="off"
+                                    />
+                                    {errors.guestNationalId && <InputError message={errors.guestNationalId} />}
+                                    {activeInput === 'guestNationalId' && suggestedUsers.length > 0 && (
+                                        <div className="bg-white dark:bg-gray-800 border rounded shadow p-2 mt-2">
+                                            {suggestedUsers.map(user => (
+                                                <div key={user.id} className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer" onClick={() => {
+                                                    setData({
+                                                        ...data,
+                                                        guestNationalId: user.national_id_number,
+                                                        guestName: user.first_name,
+                                                        guestSurname: user.last_name,
+                                                        guestemail: user.email,
+                                                        guestphone: user.phone_number,
+                                                        guestAddress: user.address,
+                                                    });
+                                                    setSuggestedUsers([]);
+                                                }}>
+                                                    {user.first_name} {user.last_name}
+                                                </div>
                                             ))}
                                         </div>
-                                    </div>
-                                    {room.roomNumber && (
-                                        <div className="grid gap-2">
-                                            <Label>Room Number</Label>
-                                            <div className="flex items-center">
-                                                <p className="mt-1 block w-full rounded-md border-gray-300 shadow-sm">{room.roomNumber}</p>
-                                                <Button type="button" onClick={() => handleReselectRoom(index)} className="ml-2">
-                                                    Reselect Room
-                                                </Button>
-                                            </div>
+                                    )}
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="guestphone">Phone</Label>
+                                    <Input
+                                        id="guestphone"
+                                        name="guestphone"
+                                        value={data.guestphone}
+                                        onChange={handleChange}
+                                        required
+                                        placeholder="Enter Phone Number"
+                                        autoComplete="off"
+                                    />
+                                    {errors.guestphone && <InputError message={errors.guestphone} />}
+                                    {activeInput === 'guestphone' && suggestedUsers.length > 0 && (
+                                        <div className="bg-white dark:bg-gray-800 border rounded shadow p-2 mt-2">
+                                            {suggestedUsers.map(user => (
+                                                <div key={user.id} className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer" onClick={() => {
+                                                    setData({
+                                                        ...data,
+                                                        guestNationalId: user.national_id_number,
+                                                        guestName: user.first_name,
+                                                        guestSurname: user.last_name,
+                                                        guestemail: user.email,
+                                                        guestphone: user.phone_number,
+                                                        guestAddress: user.address,
+                                                    });
+                                                    setSuggestedUsers([]);
+                                                }}>
+                                                    {user.first_name} {user.last_name}
+                                                </div>
+                                            ))}
                                         </div>
                                     )}
-                                    {room.roomPrice && (
-                                        <div className="grid gap-2">
-                                            <Label>Room Price</Label>
-                                            <div className="flex items-center">
-                                                <p className="mt-1 block w-full rounded-md border-gray-300 shadow-sm">{room.roomPrice}</p>
-                                            </div>
-                                        </div>
-                                    )}
-                                    <Button type="button" onClick={() => handleRemoveRoom(index)} className="mt-4">
-                                        Remove Room
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="guestName">Guest Name</Label>
+                                    <Input
+                                        id="guestName"
+                                        name="guestName"
+                                        value={data.guestName}
+                                        onChange={handleChange}
+                                        required
+                                        placeholder="Enter Guest Name"
+                                        autoComplete="off"
+                                    />
+                                    {errors.guestName && <InputError message={errors.guestName} />}
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="guestSurname">Guest Surname</Label>
+                                    <Input
+                                        id="guestSurname"
+                                        name="guestSurname"
+                                        value={data.guestSurname}
+                                        onChange={handleChange}
+                                        required
+                                        placeholder="Enter Guest Surname"
+                                        autoComplete="off"
+                                    />
+                                    {errors.guestSurname && <InputError message={errors.guestSurname} />}
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="email">Email</Label>
+                                    <Input
+                                        id="email"
+                                        name="guestemail"
+                                        type="email"
+                                        value={data.guestemail}
+                                        onChange={handleChange}
+                                        required
+                                        placeholder="Enter Email"
+                                        autoComplete="off"
+                                    />
+                                    {errors.guestemail && <InputError message={errors.guestemail} />}
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="homeAddress">Home Address</Label>
+                                    <Input
+                                        id="homeAddress"
+                                        name="guestAddress"
+                                        value={data.guestAddress}
+                                        onChange={handleChange}
+                                        required
+                                        placeholder="Enter Home Address"
+                                        autoComplete="off"
+                                    />
+                                    {errors.guestAddress && <InputError message={errors.guestAddress} />}
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="checkInDate">Check-In Date</Label>
+                                    <Input
+                                        id="checkInDate"
+                                        name="checkInDate"
+                                        type="date"
+                                        value={data.checkInDate}
+                                        onChange={handleChange}
+                                        required
+                                        autoComplete="off"
+                                    />
+                                    {errors.checkInDate && <InputError message={errors.checkInDate} />}
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="checkOutDate">Check-Out Date</Label>
+                                    <Input
+                                        id="checkOutDate"
+                                        name="checkOutDate"
+                                        type="date"
+                                        value={data.checkOutDate}
+                                        onChange={handleChange}
+                                        required
+                                        autoComplete="off"
+                                    />
+                                    {errors.checkOutDate && <InputError message={errors.checkOutDate} />}
+                                </div>
+                                <div className="flex space-x-4">
+                                    <Button type="submit" className="mt-4" disabled={processing}>
+                                        Book
+                                    </Button>
+                                    <Transition
+                                        show={recentlySuccessful}
+                                        enter="transition ease-in-out"
+                                        enterFrom="opacity-0"
+                                        leave="transition ease-in-out"
+                                        leaveTo="opacity-0"
+                                    >
+                                        <p className="text-sm text-neutral-600">Booked</p>
+                                    </Transition>
+                                    <Button type="button" className="mt-4">
+                                        Pay
+                                    </Button>
+                                    <Button type="button" className="mt-4" onClick={handleCancel}>
+                                        Cancel
                                     </Button>
                                 </div>
-                            ))}
-                            <Button type="button" onClick={handleAddRoom} className="mt-4">
-                                Add Another Room
-                            </Button>
-                            {selectedRooms.length > 0 && selectedRooms.some(room => room.roomNumber) && (
-                                <div className="grid gap-2">
-                                    <Label htmlFor="price">Total Price</Label>
-                                    <p id="price" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm">{price}</p>
-                                </div>
-                            )}
-                            <div className="grid gap-2">
-                                <Label htmlFor="checkInDate">Check-In Date</Label>
-                                <Input
-                                    id="checkInDate"
-                                    type="date"
-                                    value={checkInDate}
-                                    onChange={(e) => setCheckInDate(e.target.value)}
-                                    required
-                                    autoComplete="off"
-                                />
                             </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="checkOutDate">Check-Out Date</Label>
-                                <Input
-                                    id="checkOutDate"
-                                    type="date"
-                                    value={checkOutDate}
-                                    onChange={(e) => setCheckOutDate(e.target.value)}
-                                    required
-                                    autoComplete="off"
-                                />
+                        </Card>
+                        <Card>
+                            <div className="space-y-4">
+                                {selectedRooms.map((room, index) => (
+                                    <div key={index} className="space-y-4">
+                                        <div className="grid gap-2">
+                                            <Label>Room Type</Label>
+                                            <div className="flex flex-wrap gap-2">
+                                                {availableRoomTypes.map(availableRoomType => (
+                                                    <Button
+                                                        className="mt-4"
+                                                        key={availableRoomType.room_type_id}
+                                                        type="button"
+                                                        onClick={() => handleRoomTypeButtonClick(index, availableRoomType.room_type_id)}
+                                                    >
+                                                        {availableRoomType.room_type_name} ({availableRoomsCount[availableRoomType.room_type_id] || 0})
+                                                    </Button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        {room.roomNumber && (
+                                            <div className="grid gap-2">
+                                                <Label>Room Number</Label>
+                                                <div className="flex items-center">
+                                                    <p className="mt-4">{room.roomNumber}</p>
+                                                    <Button type="button" onClick={() => handleReselectRoom(index)} className="ml-2">
+                                                        Reselect Room
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        )}
+                                        {room.roomPrice && (
+                                            <div className="grid gap-2">
+                                                <Label>Room Price</Label>
+                                                <div className="flex items-center">
+                                                    <p className="mt-4">{room.roomPrice}</p>
+                                                </div>
+                                            </div>
+                                        )}
+                                        <Button type="button" onClick={() => handleRemoveRoom(index)} className="mt-4">
+                                            Remove Room
+                                        </Button>
+                                    </div>
+                                ))}
+                                <Button type="button" onClick={handleAddRoom} className="mt-4">
+                                    Add Another Room
+                                </Button>
+                                {selectedRooms.length > 0 && selectedRooms.some(room => room.roomNumber) && (
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="price">Total Price</Label>
+                                        <p id="price" className="mt-1">{price}</p>
+                                    </div>
+                                )}
                             </div>
-                            <div className="flex space-x-4">
-                                <Button type="submit" className="mt-4">
-                                    Book
-                                </Button>
-                                <Button type="button" className="mt-4">
-                                    Pay
-                                </Button>
-                                <Button type="button" className="mt-4">
-                                    Cancel
-                                </Button>
-                            </div>
-                        </form>
-                    </Card>
+                        </Card>
+                    </form>
                 </div>
             </div>
         </AppLayout>

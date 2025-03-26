@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import AppLayout from '@/layouts/app-layout';
+import AppLayout from '@/layouts/app/management/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
 import axios from 'axios';

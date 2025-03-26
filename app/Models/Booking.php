@@ -12,35 +12,38 @@ class Booking extends Model
     protected $fillable = [
         'room_id',
         'guest_id',
-        'check_in',
-        'check_out',
-        'total_cost',
-        'is_paid',
-        'booker_id'
+        'check_in_date',
+        'check_out_date',
+        'grand_total',
+        'currency_id',
+        'booking_status',
+        'booker_id',
+        'booked_from',
+        'booked_by'
     ];
 
     public function room()
     {
-        return $this->belongsTo(Rooms::class);
+        return $this->belongsTo(Rooms::class, 'room_id', 'room_id');
     }
 
     public function guest()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'guest_id', 'id');
     }
 
-    public function orders()
+    public function bookingInforment()
     {
-        return $this->hasMany(Order::class);
+        return $this->belongsTo(User::class, 'booker_id', 'id');
     }
 
-    public function payments()
+    public function currency()
     {
-        return $this->hasMany(Payment::class);
+        return $this->belongsTo(Currency::class, 'currency_id', 'currency_id');
     }
 
-    public function receptionist()
+    public function staffMember()
     {
-        return $this->belongsTo(User::class, 'booker_id');
+        return $this->belongsTo(User::class, 'booked_by', 'id');
     }
 }

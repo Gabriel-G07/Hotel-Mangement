@@ -20,21 +20,18 @@ class CreateSuperuser extends Command
             ['role_name' => 'Unassigned'],
             ['description' => 'Default role for users without a specific role']
         );
-
         $this->info('Unassigned role created or already exists!');
 
         $GuestRole = Roles::firstOrCreate(
             ['role_name' => 'Guest'],
             ['description' => 'These are the hotel customers']
         );
-
         $this->info('Guest role created or already exists!');
 
         $developerRole = Roles::firstOrCreate(
             ['role_name' => 'Developer'],
             ['description' => 'System Development and Maintenance']
         );
-
         $this->info('Developer role created or already exists!');
 
         $superuser = User::firstOrCreate(
@@ -52,7 +49,6 @@ class CreateSuperuser extends Command
                 'address' => 'Harare, Zimbabwe',
             ]
         );
-
         $this->info('Superuser created or already exists!');
 
         Settings::firstOrCreate(
@@ -70,7 +66,48 @@ class CreateSuperuser extends Command
                 'time_format' => 'H:i',
             ]
         );
-
         $this->info('Superuser settings created or already exists!');
+
+        $developerRole = Roles::firstOrCreate(
+            ['role_name' => 'Manager'],
+            ['description' => 'Managing and looking over the whole Hotel']
+        );
+        $this->info('Manager role created or already exists!');
+
+        $developerRole = Roles::firstOrCreate(
+            ['role_name' => 'Receptionist'],
+            ['description' => 'Receiving and Serving Guests at the Hotel']
+        );
+        $this->info('Receptionist role created or already exists!');
+
+        $developerRole = Roles::firstOrCreate(
+            ['role_name' => 'Accountant'],
+            ['description' => 'Looking Over all Finances of the Hotel']
+        );
+        $this->info('Accountant role created or already exists!');
+
+        $developerRole = Roles::firstOrCreate(
+            ['role_name' => 'Restaurant Manager'],
+            ['description' => 'Managing all the Activities in the Restaurant and Staff']
+        );
+        $this->info('Restaurant Manager role created or already exists!');
+
+        $developerRole = Roles::firstOrCreate(
+            ['role_name' => 'Housekeeping Manager'],
+            ['description' => 'Looking Over and Managing all House Keeping Issue and Staff']
+        );
+        $this->info('Housekeeping Manager role created or already exists!');
+
+        $developerRole = Roles::firstOrCreate(
+            ['role_name' => 'Restaurant Till Operator'],
+            ['description' => 'Operates the Till in the Restaurant']
+        );
+        $this->info('Restaurant Till Operator role created or already exists!');
+
+        $developerRole = Roles::firstOrCreate(
+            ['role_name' => 'Housekeeping'],
+            ['description' => 'Makes Sure that Everything is in Order and Clean Serves the Guests in all the Requests they have']
+        );
+        $this->info('Housekeeping role created or already exists!');
     }
 }

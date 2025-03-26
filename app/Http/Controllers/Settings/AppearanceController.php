@@ -72,4 +72,58 @@ class AppearanceController extends Controller
 
         return Inertia::render('management/settings/appearance', ['user_theme' => $userTheme]);
     }
+
+    public function renderHouseKeepingManagementAppearancePage()
+    {
+        $user = Auth::user();
+        $settings = Settings::where('user_id', $user->id)->first();
+        $userTheme = $settings ? $settings->theme : null;
+
+        return Inertia::render('housekeeping/management/settings/appearance', ['user_theme' => $userTheme]);
+    }
+
+    public function renderRestaurantManagementAppearancePage()
+    {
+        $user = Auth::user();
+        $settings = Settings::where('user_id', $user->id)->first();
+        $userTheme = $settings ? $settings->theme : null;
+
+        return Inertia::render('restaurant/management/settings/appearance', ['user_theme' => $userTheme]);
+    }
+
+    public function renderRestaurantAppearancePage()
+    {
+        $user = Auth::user();
+        $settings = Settings::where('user_id', $user->id)->first();
+        $userTheme = $settings ? $settings->theme : null;
+
+        return Inertia::render('restaurant/settings/appearance', ['user_theme' => $userTheme]);
+    }
+
+    public function renderHousekeepingAppearancePage()
+    {
+        $user = Auth::user();
+        $settings = Settings::where('user_id', $user->id)->first();
+        $userTheme = $settings ? $settings->theme : null;
+
+        return Inertia::render('housekeeping/settings/appearance', ['user_theme' => $userTheme]);
+    }
+
+    public function renderAccountingAppearancePage()
+    {
+        $user = Auth::user();
+        $settings = Settings::where('user_id', $user->id)->first();
+        $userTheme = $settings ? $settings->theme : null;
+
+        return Inertia::render('accounting/settings/appearance', ['user_theme' => $userTheme]);
+    }
+
+    public function renderGuestAppearancePage()
+    {
+        $user = Auth::user();
+        $settings = Settings::where('user_id', $user->id)->first();
+        $userTheme = $settings ? $settings->theme : null;
+
+        return Inertia::render('/settings/appearance', ['user_theme' => $userTheme]);
+    }
 }

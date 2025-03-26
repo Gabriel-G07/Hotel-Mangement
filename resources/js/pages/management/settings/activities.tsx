@@ -1,5 +1,5 @@
 import { Head } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout';
+import AppLayout from '@/layouts/app/management/app-layout';
 import SettingsLayout from '@/layouts/settings/management_layout';
 import HeadingSmall from '@/components/heading-small';
 import { Table, TableHead, TableCell, TableBody, TableRow } from '@/components/ui/table';

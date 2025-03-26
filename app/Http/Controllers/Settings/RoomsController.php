@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\RoomsUpdateRequest;
 use App\Models\Rooms;
 use App\Models\RoomTypes;
-use App\Models\User;
 use App\Models\AuditLog;
 use App\Models\Currency;
 use Illuminate\Http\Request;
@@ -15,7 +14,6 @@ use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Log;
 
 class RoomsController extends Controller
 {

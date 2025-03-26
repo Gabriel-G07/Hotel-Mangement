@@ -9,34 +9,19 @@ import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
     {
-        title: 'Dashboard',
-        url: '/management/dashboard',
+        title: ' Guest Dashboard',
+        url: '/dashboard',
         icon: LayoutGrid,
     },
     {
-        title: 'Accounting',
-        url: '/management/accounting',
+        title: 'Book',
+        url: '/accounting',
         icon: DollarSign,
     },
     {
-        title: 'Bookings',
-        url: '/management/bookings',
+        title: 'Records',
+        url: '/bookings',
         icon: Home,
-    },
-    {
-        title: 'Restaurant',
-        url: '/management/restaurant',
-        icon: Utensils,
-    },
-    {
-        title: 'Statistics',
-        url: '/management/statistics',
-        icon: ChartBar,
-    },
-    {
-        title: 'Users',
-        url: '/management/users',
-        icon: Users,
     },
 ];
 
@@ -60,7 +45,7 @@ export function AppSidebar() {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <Link href="/management/dashboard" prefetch>
+                            <Link href="/dashboard" prefetch>
                                 <AppLogo />
                             </Link>
                         </SidebarMenuButton>

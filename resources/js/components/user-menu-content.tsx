@@ -15,7 +15,7 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
     return (
         <>
             <DropdownMenuLabel className="p-0 font-normal">
-                <Link className="block w-full" href={route('management.user_info')} as="button" prefetch onClick={cleanup}>
+                <Link className="block w-full" href={route('user_info')} as="button" prefetch onClick={cleanup}>
                     <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                         <UserInfo user={user} showEmail={true} />
                     </div>
@@ -24,7 +24,7 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
                 <DropdownMenuItem asChild>
-                    <Link className="block w-full" href={route('management.settings.profile.edit')} as="button" prefetch onClick={cleanup}>
+                    <Link className="block w-full" href={route('settings.profile.edit')} as="button" prefetch onClick={cleanup}>
                         <Settings className="mr-2" />
                         Settings
                     </Link>

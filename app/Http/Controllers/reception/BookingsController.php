@@ -10,86 +10,119 @@ use App\Models\User;
 use App\Models\Roles;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
+use Illuminate\Http\RedirectResponse;
+use App\Http\Requests\reception\BookingUpdateRequest;
+use Illuminate\Support\Facades\DB;
 
 class BookingsController extends Controller
 {
-    public function create()
+    public function index()
     {
-        $roomTypes = RoomTypes::all();
-        $rooms = Rooms::where('is_available', true)->get();
+        $users = User::whereHas('role', function ($query) {
+            $query->where('role_name', 'Guest');
+        })->get(['id', 'first_name', 'last_name', 'national_id_number', 'phone_number', 'email', 'address']);
+        $availableRoomTypes = RoomTypes::all();
+        $availableRooms = Rooms::where('is_available', true)->get();
         return Inertia::render('reception/bookings', [
-            'roomTypes' => $roomTypes,
-            'rooms' => $rooms,
+            'availableRoomTypes' => $availableRoomTypes,
+            'availableRooms' => $availableRooms,
+            'availableGuests' => $users,
         ]);
     }
 
-    public function store(Request $request)
+    public function store(BookingUpdateRequest $request): RedirectResponse
     {
-        Log::info('Booking request received', ['request' => $request->all()]);
-
+        DB::beginTransaction();
         try {
-            $validatedData = $request->validate([
-                'nationalId' => 'required|string|max:255',
-                'guestName' => 'required|string|max:255',
-                'surname' => 'required|string|max:255',
-                'email' => 'required|string|email|max:255',
-                'phone' => 'required|string|max:15',
-                'homeAddress' => 'required|string|max:255',
-                'selectedRooms' => 'required|array',
-                'selectedRooms.*.roomNumber' => 'required|exists:rooms,room_number',
-                'checkInDate' => 'required|date',
-                'checkOutDate' => 'required|date|after:checkInDate',
-                'price' => 'required|numeric',
-            ]);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            Log::error('Validation failed', [
-                'errors' => $e->errors(),
-                'request' => $request->all(),
-            ]);
-            return response()->json(['message' => 'Validation failed', 'errors' => $e->errors()], 422);
+            Log::info('Booking request received', ['request' => $request->all()]);
+
+            $validatedData = $request->validated();
+            Log::info('Validation successful', ['validatedData' => $validatedData]);
+
+            // Find or create guest
+            $guest = User::whereHas('role', function ($query) {
+                $query->where('role_name', 'Guest');
+            })->where(function ($query) use ($validatedData) {
+                $query->where('national_id_number', $validatedData['guestNationalId'])
+                      ->orWhere('email', $validatedData['guestemail']);
+            })->first();
+
+            if ($guest) {
+                Log::info('Guest found', ['guest' => $guest]);
+            } else {
+                Log::info('Guest not found, creating guest');
+                $guestRole = Roles::where('role_name', 'Guest')->firstOrFail();
+                $randomPassword = Hash::make(Str::random(10));
+
+                $guest = User::create([
+                    'username' => strtolower($validatedData['guestName'] . '.' . $validatedData['guestSurname']),
+                    'national_id_number' => $validatedData['guestNationalId'],
+                    'first_name' => $validatedData['guestName'],
+                    'last_name' => $validatedData['guestSurname'],
+                    'email' => $validatedData['guestemail'],
+                    'phone_number' => $validatedData['guestphone'],
+                    'address' => $validatedData['guestAddress'],
+                    'role_id' => $guestRole->role_id,
+                    'password' => $randomPassword,
+                ]);
+                Log::info('Guest created successfully', ['guest' => $guest]);
+            }
+
+            // Create booking for each selected room
+            foreach ($validatedData['selectedRooms'] as $roomNumber) {
+                $room = Rooms::where('room_number', $roomNumber)->lockForUpdate()->first(); // 👈 Add lock
+
+                if ($room) {
+                    $bookingStatus = $validatedData['checkInDate'] === date('Y-m-d') ? 'Confirmed' : 'Pending';
+
+                    try {
+                        // Create booking FIRST
+                        Booking::create([
+                            'room_id' => $room->room_id,
+                            'guest_id' => $guest->id,
+                            'check_in_date' => $validatedData['checkInDate'],
+                            'check_out_date' => $validatedData['checkOutDate'],
+                            'grand_total' => $room->price_per_night,
+                            'currency_id' => $room->currency_id,
+                            'booking_status' => $bookingStatus,
+                            'booker_id' => $guest->id,
+                            'booked_by' => Auth::id(),
+                            'booked_from' => 'reception',
+                        ]);
+
+                        // Then update room status
+                        $room->update(['is_available' => false]); // 👈 Use update() instead of save()
+                    } catch (\Exception $e) {
+                        Log::error('Failed to save booking', [
+                            'room_id' => $room->room_id,
+                            'guest_id' => $guest->id,
+                            'check_in_date' => $validatedData['checkInDate'],
+                            'check_out_date' => $validatedData['checkOutDate'],
+                            'grand_total' => $room->price_per_night,
+                            'currency_id' => $room->currency_id,
+                            'booking_status' => $bookingStatus,
+                            'booker_id' => $guest->id,
+                            'booked_by' => Auth::id(),
+                            'booked_from' => 'reception',
+                            'error' => $e->getMessage()
+                        ]);
+                        throw $e; // Re-throw the exception to trigger rollback
+                    }
+                }
+            }
+
+            DB::commit(); // 👈 Only commit if everything succeeds
+            return to_route('reception.bookings');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Booking failed', ['error' => $e->getMessage()]);
+            return back()->withErrors(['error' => 'Booking failed: '.$e->getMessage()]);
         }
-
-        // Get the role ID for the "Guest" role
-        $guestRole = Roles::where('role_name', 'Guest')->firstOrFail();
-
-        // Update or create the guest user
-        $guest = User::updateOrCreate(
-            ['national_id_number' => $validatedData['nationalId']],
-            [
-                'first_name' => $validatedData['guestName'],
-                'last_name' => $validatedData['surname'],
-                'email' => $validatedData['email'],
-                'phone_number' => $validatedData['phone'],
-                'address' => $validatedData['homeAddress'],
-                'role_id' => $guestRole->role_id,
-            ]
-        );
-
-        // Create the booking for each selected room
-        foreach ($validatedData['selectedRooms'] as $selectedRoom) {
-            Booking::create([
-                'room_id' => Rooms::where('room_number', $selectedRoom['roomNumber'])->first()->room_id,
-                'guest_id' => $guest->id,
-                'check_in' => $validatedData['checkInDate'],
-                'check_out' => $validatedData['checkOutDate'],
-                'total_cost' => $validatedData['price'],
-                'is_paid' => false,
-                'booker_id' => auth()->id(),
-            ]);
-        }
-
-        return response()->json(['message' => 'Booking successful'], 200);
-    }
-
-    public function roomsAndTypes()
-    {
-        $roomTypes = RoomTypes::all();
-        $rooms = Rooms::where('is_available', true)->get();
-        return response()->json([
-            'roomTypes' => $roomTypes,
-            'rooms' => $rooms,
-        ]);
     }
 
     public function suggestions(Request $request)

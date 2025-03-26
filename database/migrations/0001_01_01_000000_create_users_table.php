@@ -125,19 +125,22 @@ return new class extends Migration
         Schema::create('bookings', function (Blueprint $table) {
             $table->id('booking_id');
             $table->unsignedBigInteger('room_id');
-            $table->string('guest_id'); // Matches the 'username' data type
+            $table->unsignedBigInteger('guest_id');
             $table->date('check_in_date');
             $table->date('check_out_date');
-            $table->decimal('total_price', 10, 2);
-            $table->unsignedBigInteger('currency_id');
+            $table->decimal('grand_total', 10, 2)->nullable();
+            $table->unsignedBigInteger('currency_id')->nullable();
             $table->enum('booking_status', ['Pending', 'Confirmed', 'Cancelled'])->default('Pending');
             $table->unsignedBigInteger('booker_id');
+            $table->unsignedBigInteger('booked_by');
+            $table->string('booked_from');
             $table->timestamps();
 
             $table->foreign('room_id')->references('room_id')->on('rooms');
-            $table->foreign('guest_id')->references('username')->on('users');
+            $table->foreign('guest_id')->references('id')->on('users');
             $table->foreign('currency_id')->references('currency_id')->on('currencies');
             $table->foreign('booker_id')->references('id')->on('users');
+            $table->foreign('booked_by')->references('id')->on('users');
         });
 
         // Create the 'payment_methods' table

@@ -23,11 +23,6 @@ const sidebarNavItems: NavItem[] = [
         icon: null,
     },
     {
-        title: 'Roles',
-        url: '/management/settings/roles',
-        icon: null,
-    },
-    {
         title: 'Activities',
         url: '/management/settings/activities',
         icon: null,

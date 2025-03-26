@@ -9,7 +9,7 @@ import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import AppLayout from '@/layouts/app-layout';
+import AppLayout from '@/layouts/app/management/app-layout';
 import SettingsLayout from '@/layouts/settings/management_layout';
 import { ActionMessage } from '@/components/ui/action-message';
 import { Table, TableHead, TableCell, TableBody, TableRow } from '@/components/ui/table';

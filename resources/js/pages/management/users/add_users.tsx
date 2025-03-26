@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Head, router, usePage } from '@inertiajs/react';
 import { type BreadcrumbItem } from '@/types';
-import AppLayout from '@/layouts/app-layout';
+import AppLayout from '@/layouts/app/management/app-layout';
 import UsersLayout from '@/pages/management/users';
 import HeadingSmall from '@/components/heading-small';
-import { useAppearance } from '@/hooks/use-appearance';
 import { CustomSelect } from '@/components/ui/custom-select';
+import { Input } from '@/components/ui/input';
 
 interface Role {
     role_id: number;
@@ -33,8 +33,6 @@ export default function AddUsers({ roles }: AddUsersProps) {
         national_id_number: '',
     });
 
-    const { appearance } = useAppearance();
-
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         setUser({ ...user, [e.target.name]: e.target.value });
     };
@@ -52,45 +50,40 @@ export default function AddUsers({ roles }: AddUsersProps) {
                 <div className="space-y-6">
                     <HeadingSmall title="Add User" description="Add a new user to the system." />
                     <form onSubmit={handleSubmit} className="space-y-4">
-                        <input
+                        <Input
                             type="text"
                             name="first_name"
                             value={user.first_name}
                             onChange={handleChange}
                             placeholder="First Name"
-                            className="w-full p-2 border rounded"
                         />
-                        <input
+                        <Input
                             type="text"
                             name="last_name"
                             value={user.last_name}
                             onChange={handleChange}
                             placeholder="Last Name"
-                            className="w-full p-2 border rounded"
                         />
-                        <input
+                        <Input
                             type="text"
                             name="phone_number"
                             value={user.phone_number}
                             onChange={handleChange}
                             placeholder="Phone Number"
-                            className="w-full p-2 border rounded"
                         />
-                        <input
+                        <Input
                             type="email"
                             name="email"
                             value={user.email}
                             onChange={handleChange}
                             placeholder="Email"
-                            className="w-full p-2 border rounded"
                         />
-                        <input
+                        <Input
                             type="text"
                             name="national_id_number"
                             value={user.national_id_number}
                             onChange={handleChange}
                             placeholder="National ID Number"
-                            className="w-full p-2 border rounded"
                         />
                         <CustomSelect
                             name="role_id"

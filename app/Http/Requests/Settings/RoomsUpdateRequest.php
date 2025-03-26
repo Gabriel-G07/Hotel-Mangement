@@ -2,10 +2,8 @@
 
 namespace App\Http\Requests\Settings;
 
-use App\Models\Rooms;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class RoomsUpdateRequest extends FormRequest
 {
