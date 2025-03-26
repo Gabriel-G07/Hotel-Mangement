@@ -100,12 +100,19 @@ class RegisteredUserController extends Controller
             case 'Receptionist':
                 return redirect()->intended('/reception/dashboard');
             case 'Accounting':
-                return redirect()->intended('/accounting'); // Replace with your accounting route
+                return redirect()->intended('/accounting/dashboard');
             case 'Manager':
                 return redirect()->intended('/management/dashboard');
-            // Add more cases for other roles as needed
+            case 'Restaurant Manager':
+                return redirect()->intended('/restaurant/management/dashboard');
+            case 'Housekeeping Manager':
+                return redirect()->intended('/housekeeping/management/dashboard');
+            case 'Restaurant Till Operator':
+                return redirect()->intended('/restaurant/dashboard');
+            case 'Housekeeping':
+                return redirect()->intended('/housekeeping/dashboard');
             default:
-                return to_route('dashboard'); // Default to dashboard if no match
+                return to_route('dashboard');
         }
     }
 }
