@@ -112,7 +112,7 @@ class RegisteredUserController extends Controller
             case 'Housekeeping':
                 return redirect()->intended('/housekeeping/dashboard');
             default:
-                return to_route('dashboard');
+                return to_route('/dashboard');
         }
     }
 }

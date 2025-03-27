@@ -8,6 +8,9 @@ use App\Models\Rooms;
 use App\Models\RoomTypes;
 use App\Models\User;
 use App\Models\Roles;
+use App\Models\BookedByDetails;
+use App\Models\BookerDetails;
+use App\Models\Currency;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Hash;
@@ -16,7 +19,7 @@ use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Illuminate\Http\RedirectResponse;
 use App\Http\Requests\reception\BookingUpdateRequest;
-use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class BookingsController extends Controller
 {
@@ -36,7 +39,6 @@ class BookingsController extends Controller
 
     public function store(BookingUpdateRequest $request): RedirectResponse
     {
-        DB::beginTransaction();
         try {
             Log::info('Booking request received', ['request' => $request->all()]);
 
@@ -74,54 +76,57 @@ class BookingsController extends Controller
 
             // Create booking for each selected room
             foreach ($validatedData['selectedRooms'] as $roomNumber) {
-                $room = Rooms::where('room_number', $roomNumber)->lockForUpdate()->first(); // 👈 Add lock
+                $room = Rooms::where('room_number', $roomNumber)->first();
 
                 if ($room) {
+                    Log::info('Room found', ['room' => $room]);
                     $bookingStatus = $validatedData['checkInDate'] === date('Y-m-d') ? 'Confirmed' : 'Pending';
 
-                    try {
-                        // Create booking FIRST
-                        Booking::create([
-                            'room_id' => $room->room_id,
-                            'guest_id' => $guest->id,
-                            'check_in_date' => $validatedData['checkInDate'],
-                            'check_out_date' => $validatedData['checkOutDate'],
-                            'grand_total' => $room->price_per_night,
-                            'currency_id' => $room->currency_id,
-                            'booking_status' => $bookingStatus,
-                            'booker_id' => $guest->id,
-                            'booked_by' => Auth::id(),
-                            'booked_from' => 'reception',
-                        ]);
+                    // Parse the dates
+                    $checkInDate = Carbon::parse($validatedData['checkInDate']);
+                    $checkOutDate = Carbon::parse($validatedData['checkOutDate']);
 
-                        // Then update room status
-                        $room->update(['is_available' => false]); // 👈 Use update() instead of save()
-                    } catch (\Exception $e) {
-                        Log::error('Failed to save booking', [
-                            'room_id' => $room->room_id,
-                            'guest_id' => $guest->id,
-                            'check_in_date' => $validatedData['checkInDate'],
-                            'check_out_date' => $validatedData['checkOutDate'],
-                            'grand_total' => $room->price_per_night,
-                            'currency_id' => $room->currency_id,
-                            'booking_status' => $bookingStatus,
-                            'booker_id' => $guest->id,
-                            'booked_by' => Auth::id(),
-                            'booked_from' => 'reception',
-                            'error' => $e->getMessage()
+                    // Explicitly check if checkOutDate is before checkInDate
+                    if ($checkOutDate->lessThanOrEqualTo($checkInDate)) {
+                        Log::error('Invalid date range: Check-out date must be after check-in date.', [
+                            'checkInDate' => $checkInDate,
+                            'checkOutDate' => $checkOutDate,
                         ]);
-                        throw $e; // Re-throw the exception to trigger rollback
+                        return redirect()->back()->withErrors(['error' => 'Check-out date must be after check-in date.']);
                     }
+
+                    // Calculate the number of days between check-in and check-out
+                    $numberOfDays = $checkOutDate->diffInDays($checkInDate);
+
+                    // Calculate the grand total
+                    $grandTotal = $room->price_per_night * $numberOfDays;
+
+                    // Create the booking
+                    Booking::create([
+                        'room_id' => $room->room_id,
+                        'guest_id' => $guest->id,
+                        'check_in_date' => $validatedData['checkInDate'],
+                        'check_out_date' => $validatedData['checkOutDate'],
+                        'grand_total' => $grandTotal,
+                        'currency_id' => $room->currency_id,
+                        'booking_status' => $bookingStatus,
+                        'booked_by_id' => Auth::user()->id,
+                        'booker_id' => $guest->id,
+                        'booked_from' => 'reception',
+                    ]);
+
+                    $room->is_available = false;
+                    $room->save();
+                    Log::info('Room booking created and marked as unavailable', ['room' => $room]);
+                } else {
+                    Log::warning('Room not found', ['roomNumber' => $roomNumber]);
                 }
             }
 
-            DB::commit(); // 👈 Only commit if everything succeeds
             return to_route('reception.bookings');
-
         } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Booking failed', ['error' => $e->getMessage()]);
-            return back()->withErrors(['error' => 'Booking failed: '.$e->getMessage()]);
+            Log::error('Error processing booking', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            return redirect()->back()->withErrors(['error' => 'Failed to process booking.']);
         }
     }
 

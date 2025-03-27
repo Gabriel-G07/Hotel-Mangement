@@ -22,7 +22,7 @@ class BookingUpdateRequest extends FormRequest
             'guestAddress' => 'required|string|max:255',
             'selectedRooms' => 'required|array',
             'checkInDate' => 'required|date',
-            'checkOutDate' => 'required|date',
+            'checkOutDate' => 'required|date|after:checkInDate',
         ];
     }
 }

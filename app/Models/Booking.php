@@ -19,7 +19,7 @@ class Booking extends Model
         'booking_status',
         'booker_id',
         'booked_from',
-        'booked_by'
+        'booked_by_id'
     ];
 
     public function room()
@@ -44,6 +44,6 @@ class Booking extends Model
 
     public function staffMember()
     {
-        return $this->belongsTo(User::class, 'booked_by', 'id');
+        return $this->belongsTo(User::class, 'booked_by_id', 'id');
     }
 }

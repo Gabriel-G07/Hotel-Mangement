@@ -121,6 +121,24 @@ return new class extends Migration
             $table->foreign('currency_id')->references('currency_id')->on('currencies');
         });
 
+        // Create the 'booked_by_details' table
+        Schema::create('booked_by_details', function (Blueprint $table) {
+            $table->id('booked_by_id');
+            $table->unsignedBigInteger('user_id');
+            $table->timestamps();
+
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+        });
+
+        // Create the 'booker_details' table
+        Schema::create('booker_details', function (Blueprint $table) {
+            $table->id('booker_id');
+            $table->unsignedBigInteger('user_id');
+            $table->timestamps();
+
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+        });
+
         // Create the 'bookings' table
         Schema::create('bookings', function (Blueprint $table) {
             $table->id('booking_id');
@@ -131,16 +149,16 @@ return new class extends Migration
             $table->decimal('grand_total', 10, 2)->nullable();
             $table->unsignedBigInteger('currency_id')->nullable();
             $table->enum('booking_status', ['Pending', 'Confirmed', 'Cancelled'])->default('Pending');
+            $table->unsignedBigInteger('booked_by_id');
             $table->unsignedBigInteger('booker_id');
-            $table->unsignedBigInteger('booked_by');
             $table->string('booked_from');
             $table->timestamps();
 
             $table->foreign('room_id')->references('room_id')->on('rooms');
             $table->foreign('guest_id')->references('id')->on('users');
             $table->foreign('currency_id')->references('currency_id')->on('currencies');
+            $table->foreign('booked_by_id')->references('id')->on('users');
             $table->foreign('booker_id')->references('id')->on('users');
-            $table->foreign('booked_by')->references('id')->on('users');
         });
 
         // Create the 'payment_methods' table
