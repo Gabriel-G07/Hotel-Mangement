@@ -378,7 +378,7 @@ export default function Bookings({ availableRoomTypes, availableRooms, available
                             <h2 className="text-lg font-semibold">Guest Information</h2>
                             <div className="space-y-6">
                                 <div className="grid gap-2">
-                                    <Label htmlFor="bookingType">Booking Type</Label>
+                                    <Label htmlFor="bookingType">Booking For:</Label>
                                     <CustomSelect
                                         id="bookingType"
                                         name="bookingType"
@@ -616,7 +616,7 @@ export default function Bookings({ availableRoomTypes, availableRooms, available
                                 <h2 className="text-lg font-semibold">Guest Information</h2>
                                 <div className="space-y-6">
                                     <div className="grid gap-2">
-                                        <Label htmlFor="bookingType">Booking Type</Label>
+                                        <Label htmlFor="bookingType">Booking For:</Label>
                                         <CustomSelect
                                             id="bookingType"
                                             name="bookingType"

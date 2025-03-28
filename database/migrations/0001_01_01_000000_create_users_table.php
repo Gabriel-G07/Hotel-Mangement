@@ -121,24 +121,6 @@ return new class extends Migration
             $table->foreign('currency_id')->references('currency_id')->on('currencies');
         });
 
-        // Create the 'booked_by_details' table
-        Schema::create('booked_by_details', function (Blueprint $table) {
-            $table->id('booked_by_id');
-            $table->unsignedBigInteger('user_id');
-            $table->timestamps();
-
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-        });
-
-        // Create the 'booker_details' table
-        Schema::create('booker_details', function (Blueprint $table) {
-            $table->id('booker_id');
-            $table->unsignedBigInteger('user_id');
-            $table->timestamps();
-
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-        });
-
         // Create the 'bookings' table
         Schema::create('bookings', function (Blueprint $table) {
             $table->id('booking_id');
