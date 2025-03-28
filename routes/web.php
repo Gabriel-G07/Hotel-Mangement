@@ -6,6 +6,7 @@ use App\Http\Controllers\accounting\AccountingPaymentsController;
 use App\Http\Controllers\management\BookingsController as ManagementBookingsController;
 use App\Http\Controllers\reception\BookingsController as ReceptionBookingsController;
 use App\Http\Controllers\reception\ReceptionUsersController;
+use App\Http\Controllers\reception\AvailableRoomsController;
 use App\Http\Middleware\CheckRoles;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -182,6 +183,8 @@ Route::middleware(['auth', 'verified', CheckRoles::class . ':reception'])->group
     Route::get('reception/user_info', function () {
         return Inertia::render('reception/user_info');
     })->name('reception.user_info');
+
+    Route::get('/reception/available-rooms', [AvailableRoomsController::class, 'filter']);
 });
 
 // Restaurant Till Routes

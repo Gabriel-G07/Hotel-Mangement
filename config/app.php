@@ -65,7 +65,7 @@ return [
     |
     */
 
-    'timezone' => 'UTC',
+    'timezone' => 'Africa/Harare', // Set this to your desired timezone
 
     /*
     |--------------------------------------------------------------------------
@@ -78,11 +78,9 @@ return [
     |
     */
 
-    'locale' => env('APP_LOCALE', 'en'),
-
-    'fallback_locale' => env('APP_FALLBACK_LOCALE', 'en'),
-
-    'faker_locale' => env('APP_FAKER_LOCALE', 'en_US'),
+    'locale' => 'en',
+    'fallback_locale' => 'en',
+    'faker_locale' => 'en_US',
 
     /*
     |--------------------------------------------------------------------------

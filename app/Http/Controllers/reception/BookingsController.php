@@ -22,11 +22,51 @@ class BookingsController extends Controller
 {
     public function index()
     {
+        Carbon::setLocale(config('app.locale'));
+        date_default_timezone_set(config('app.timezone'));
+
         $users = User::whereHas('role', function ($query) {
             $query->where('role_name', 'Guest');
         })->get(['id', 'first_name', 'last_name', 'national_id_number', 'phone_number', 'email', 'address']);
         $availableRoomTypes = RoomTypes::all();
-        $availableRooms = Rooms::where('is_available', true)->get();
+
+        $currentDate = Carbon::today();
+
+        $searchDays = [$currentDate->toDateString()];
+
+        // Log room occupancy and build occupancy array
+        $roomOccupancies = [];
+        $allRooms = Rooms::all();
+        foreach ($allRooms as $room) {
+            $bookings = $room->bookings;
+            if ($bookings->isNotEmpty()) {
+                foreach ($bookings as $booking) {
+                    $bookingCheckIn = Carbon::parse($booking->check_in_date);
+                    $bookingCheckOut = Carbon::parse($booking->check_out_date);
+                    $numberOfDays = $bookingCheckIn->diffInDays($bookingCheckOut);
+
+                    $occupiedDays = [];
+                    for ($i = 0; $i <= $numberOfDays; $i++) {
+                        $occupiedDays[] = $bookingCheckIn->clone()->addDays($i)->toDateString();
+                    }
+                    $roomOccupancies[$room->room_id] = array_merge($roomOccupancies[$room->room_id] ?? [], $occupiedDays);
+                }
+            } else {
+                $roomOccupancies[$room->room_id] = [];
+            }
+        }
+
+        // Get all available rooms
+        $allAvailableRooms = Rooms::where('is_available', true)->get();
+
+        $availableRooms = $allAvailableRooms->filter(function ($room) use ($searchDays, $roomOccupancies) {
+            if (isset($roomOccupancies[$room->room_id]) && !empty($roomOccupancies[$room->room_id])) {
+                $overlap = array_intersect($searchDays, $roomOccupancies[$room->room_id]);
+                return empty($overlap);
+            }
+            return true;
+        });
+
         return Inertia::render('reception/bookings', [
             'availableRoomTypes' => $availableRoomTypes,
             'availableRooms' => $availableRooms,
@@ -113,7 +153,7 @@ class BookingsController extends Controller
                     ]);
                     Log::info('Booking created successfully', ['booking' => $booking]);
 
-                    $room->is_available = false;
+                    // $room->is_available = false;
                     $room->save();
                     Log::info('Room availability updated', ['room' => $room]);
                 } else {

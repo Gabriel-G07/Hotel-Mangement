@@ -9,6 +9,9 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { CustomSelect } from '@/components/ui/custom-select';
+import axios from 'axios';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -36,27 +39,21 @@ interface BookingsProps {
     bookingInfo: BookingInfo[];
 }
 
-// Component to display user suggestions
-const UserSuggestions = ({ suggestions, onSelect }) => {
-    return (
-        <div className="bg-white dark:bg-gray-800 border rounded shadow p-2 mt-2">
-            {suggestions.map(user => (
-                <div
-                    key={user.id}
-                    className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer"
-                    onClick={() => onSelect(user)}
-                >
-                    <p>{user.first_name} {user.last_name} <a className="text-sm text-gray-500"> {user.email}</a></p>
-
-                </div>
-            ))}
-        </div>
-    );
-};
-
 export default function Bookings({ availableRoomTypes, availableRooms, availableGuests }: BookingsProps) {
+    const today = new Date();
+    const tomorrow = new Date();
+    tomorrow.setDate(today.getDate() + 1);
+
+    // Helper function to format dates in the local timezone (YYYY-MM-DD)
+    const formatDateToLocal = (date: Date): string => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
     const { data, setData, post, errors, processing, recentlySuccessful, reset } = useForm({
-        bookingType: 'Self', // Default to "Self"
+        bookingType: 'Self',
         guestNationalId: '',
         guestName: '',
         guestSurname: '',
@@ -69,8 +66,8 @@ export default function Bookings({ availableRoomTypes, availableRooms, available
         bookeremail: '',
         bookerphone: '',
         selectedRooms: [] as string[],
-        checkInDate: '',
-        checkOutDate: '',
+        checkInDate: formatDateToLocal(today),
+        checkOutDate: formatDateToLocal(tomorrow),
     });
 
     const [selectedRooms, setSelectedRooms] = useState([{ availableRoomType: '', roomNumber: '', roomPrice: '' }]);
@@ -80,15 +77,23 @@ export default function Bookings({ availableRoomTypes, availableRooms, available
     const [users, setUsers] = useState([]);
     const [activeInput, setActiveInput] = useState('');
     const [availableRoomsCount, setAvailableRoomsCount] = useState({});
+    const [filteredRooms, setFilteredRooms] = useState(availableRooms);
 
     useEffect(() => {
         const countRoomsAndTypes = async () => {
             const count = {};
-            availableRooms.forEach(room => {
+            let roomsArray = availableRooms;
+
+            if (!Array.isArray(availableRooms)) {
+                roomsArray = Object.values(availableRooms);
+            }
+
+            roomsArray.forEach(room => {
                 if (room.is_available) {
                     count[room.room_type_id] = (count[room.room_type_id] || 0) + 1;
                 }
             });
+
             setAvailableRoomsCount(count);
         };
 
@@ -102,6 +107,11 @@ export default function Bookings({ availableRoomTypes, availableRooms, available
             console.error('Unexpected format for availableGuests:', availableGuests);
         }
     }, [availableGuests]);
+
+    // Ensure the filteredRooms are updated when the page loads with default dates
+    useEffect(() => {
+        handleDateChange();
+    }, []);
 
     const filterSuggestedUsers = (query: string, inputType: string) => {
         if (!query.trim()) {
@@ -211,14 +221,14 @@ export default function Bookings({ availableRoomTypes, availableRooms, available
         const newSelectedRooms = [...selectedRooms];
         newSelectedRooms[index] = { ...newSelectedRooms[index], availableRoomType: roomTypeId };
 
-        const filteredRooms = availableRooms.filter(room => room.room_type_id === roomTypeId);
-        setRoomOptions(filteredRooms.map(room => ({
+        const filteredRoomsByType = filteredRooms.filter(room => room.room_type_id === roomTypeId);
+        setRoomOptions(filteredRoomsByType.map(room => ({
             value: room.room_number,
             label: `${room.room_number} - ${room.price_per_night}`
         })));
 
-        if (filteredRooms.length > 0) {
-            const randomRoom = filteredRooms[Math.floor(Math.random() * filteredRooms.length)];
+        if (filteredRoomsByType.length > 0) {
+            const randomRoom = filteredRoomsByType[Math.floor(Math.random() * filteredRoomsByType.length)];
             newSelectedRooms[index].roomNumber = randomRoom.room_number;
             newSelectedRooms[index].roomPrice = randomRoom.price_per_night;
         } else {
@@ -234,10 +244,10 @@ export default function Bookings({ availableRoomTypes, availableRooms, available
         const newSelectedRooms = [...selectedRooms];
         const roomTypeId = newSelectedRooms[index].availableRoomType;
 
-        const filteredRooms = availableRooms.filter(room => room.room_type_id === roomTypeId);
+        const filteredRoomsByType = filteredRooms.filter(room => room.room_type_id === roomTypeId);
 
-        if (filteredRooms.length > 0) {
-            const randomRoom = filteredRooms[Math.floor(Math.random() * filteredRooms.length)];
+        if (filteredRoomsByType.length > 0) {
+            const randomRoom = filteredRoomsByType[Math.floor(Math.random() * filteredRoomsByType.length)];
             newSelectedRooms[index].roomNumber = randomRoom.room_number;
             newSelectedRooms[index].roomPrice = randomRoom.price_per_night;
         } else {
@@ -265,6 +275,50 @@ export default function Bookings({ availableRoomTypes, availableRooms, available
         setData('selectedRooms', selectedRoomNumbers);
     }, [selectedRooms]);
 
+    const handleDateChange = async () => {
+        if (data.checkInDate && data.checkOutDate) {
+            try {
+                const checkInDate = new Date(data.checkInDate);
+                const checkOutDate = new Date(data.checkOutDate);
+
+                if (isNaN(checkInDate.getTime()) || isNaN(checkOutDate.getTime())) {
+                    alert('Invalid date format. Please use a valid date format (e.g., YYYY-MM-DD).');
+                    return;
+                }
+
+                if (checkInDate >= checkOutDate) {
+                    alert('Check-out date must be after the check-in date.');
+                    return;
+                }
+
+                // Use the local timezone format
+                const formattedCheckInDate = formatDateToLocal(checkInDate);
+                const formattedCheckOutDate = formatDateToLocal(checkOutDate);
+
+                const response = await axios.get('/reception/available-rooms', {
+                    params: {
+                        checkInDate: formattedCheckInDate,
+                        checkOutDate: formattedCheckOutDate,
+                    },
+                });
+                setFilteredRooms(response.data);
+            } catch (error) {
+                console.error('Error fetching available rooms:', error);
+                if (error.response?.status === 422) {
+                    alert('Invalid date range. Please ensure the check-in date is before the check-out date.');
+                } else if (error.response?.status === 500) {
+                    alert('An error occurred while fetching available rooms. Please try again later.');
+                } else {
+                    alert('Unexpected error. Please check your network connection.');
+                }
+            }
+        }
+    };
+
+    useEffect(() => {
+        handleDateChange();
+    }, [data.checkInDate, data.checkOutDate]);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -274,7 +328,6 @@ export default function Bookings({ availableRoomTypes, availableRooms, available
             ...data,
             selectedRooms: selectedRoomNumbers,
         };
-        console.log('Data being sent to the backend:', requestData);
 
         post(route('reception.bookings.store'), requestData, {
             preserveScroll: true,
@@ -293,6 +346,24 @@ export default function Bookings({ availableRoomTypes, availableRooms, available
         reset();
         setSelectedRooms([{ availableRoomType: '', roomNumber: '', roomPrice: '' }]);
         setPrice(0);
+    };
+
+    // Component to display user suggestions
+    const UserSuggestions = ({ suggestions, onSelect }) => {
+        return (
+            <div className="bg-white dark:bg-gray-800 border rounded shadow p-2 mt-2">
+                {suggestions.map(user => (
+                    <div
+                        key={user.id}
+                        className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer"
+                        onClick={() => onSelect(user)}
+                    >
+                        <p>{user.first_name} {user.last_name} <a className="text-sm text-gray-500"> {user.email}</a></p>
+
+                    </div>
+                ))}
+            </div>
+        );
     };
 
     return (
@@ -437,27 +508,25 @@ export default function Bookings({ availableRoomTypes, availableRooms, available
                             <div className="space-y-6">
                                 <div className="grid gap-2">
                                     <Label htmlFor="checkInDate">Check-In Date</Label>
-                                    <Input
-                                        id="checkInDate"
-                                        name="checkInDate"
-                                        type="date"
-                                        value={data.checkInDate}
-                                        onChange={(e) => setData('checkInDate', e.target.value)}
-                                        required
-                                        autoComplete="off"
+                                    <DatePicker
+                                        selected={data.checkInDate ? new Date(data.checkInDate) : null}
+                                        onChange={(date) => setData('checkInDate', date ? formatDateToLocal(date) : '')}
+                                        dateFormat="yyyy-MM-dd"
+                                        className="w-full border rounded px-3 py-2"
+                                        placeholderText="Select Check-In Date"
+                                        minDate={new Date()} // Prevent selecting past dates
                                     />
                                     {errors.checkInDate && <InputError message={errors.checkInDate} />}
                                 </div>
                                 <div className="grid gap-2">
                                     <Label htmlFor="checkOutDate">Check-Out Date</Label>
-                                    <Input
-                                        id="checkOutDate"
-                                        name="checkOutDate"
-                                        type="date"
-                                        value={data.checkOutDate}
-                                        onChange={(e) => setData('checkOutDate', e.target.value)}
-                                        required
-                                        autoComplete="off"
+                                    <DatePicker
+                                        selected={data.checkOutDate ? new Date(data.checkOutDate) : null}
+                                        onChange={(date) => setData('checkOutDate', date ? formatDateToLocal(date) : '')}
+                                        dateFormat="yyyy-MM-dd"
+                                        className="w-full border rounded px-3 py-2"
+                                        placeholderText="Select Check-Out Date"
+                                        minDate={new Date()} // Prevent selecting past dates
                                     />
                                     {errors.checkOutDate && <InputError message={errors.checkOutDate} />}
                                 </div>
@@ -516,6 +585,15 @@ export default function Bookings({ availableRoomTypes, availableRooms, available
                                 <Button type="submit" onClick={handleSubmit} disabled={processing}>
                                     Book
                                 </Button>
+                                <Transition
+                                    show={recentlySuccessful}
+                                    enter="transition ease-in-out"
+                                    enterFrom="opacity-0"
+                                    leave="transition ease-in-out"
+                                    leaveTo="opacity-0"
+                                >
+                                    <p className="text-sm text-neutral-600">Saved</p>
+                                </Transition>
                             </div>
                             <div className="flex justify-start mt-4 space-x-4"><br></br>
                                 <Button type="button" className="mt-4">
@@ -774,27 +852,25 @@ export default function Bookings({ availableRoomTypes, availableRooms, available
                                 <div className="space-y-6">
                                     <div className="grid gap-2">
                                         <Label htmlFor="checkInDate">Check-In Date</Label>
-                                        <Input
-                                            id="checkInDate"
-                                            name="checkInDate"
-                                            type="date"
-                                            value={data.checkInDate}
-                                            onChange={(e) => setData('checkInDate', e.target.value)}
-                                            required
-                                            autoComplete="off"
+                                        <DatePicker
+                                            selected={data.checkInDate ? new Date(data.checkInDate) : null}
+                                            onChange={(date) => setData('checkInDate', date ? formatDateToLocal(date) : '')}
+                                            dateFormat="yyyy-MM-dd"
+                                            className="w-full border rounded px-3 py-2"
+                                            placeholderText="Select Check-In Date"
+                                            minDate={new Date()} // Prevent selecting past dates
                                         />
                                         {errors.checkInDate && <InputError message={errors.checkInDate} />}
                                     </div>
                                     <div className="grid gap-2">
                                         <Label htmlFor="checkOutDate">Check-Out Date</Label>
-                                        <Input
-                                            id="checkOutDate"
-                                            name="checkOutDate"
-                                            type="date"
-                                            value={data.checkOutDate}
-                                            onChange={(e) => setData('checkOutDate', e.target.value)}
-                                            required
-                                            autoComplete="off"
+                                        <DatePicker
+                                            selected={data.checkOutDate ? new Date(data.checkOutDate) : null}
+                                            onChange={(date) => setData('checkOutDate', date ? formatDateToLocal(date) : '')}
+                                            dateFormat="yyyy-MM-dd"
+                                            className="w-full border rounded px-3 py-2"
+                                            placeholderText="Select Check-Out Date"
+                                            minDate={new Date()} // Prevent selecting past dates
                                         />
                                         {errors.checkOutDate && <InputError message={errors.checkOutDate} />}
                                     </div>
@@ -802,6 +878,15 @@ export default function Bookings({ availableRoomTypes, availableRooms, available
                                         <Button type="submit" onClick={handleSubmit} disabled={processing}>
                                             Book
                                         </Button>
+                                        <Transition
+                                            show={recentlySuccessful}
+                                            enter="transition ease-in-out"
+                                            enterFrom="opacity-0"
+                                            leave="transition ease-in-out"
+                                            leaveTo="opacity-0"
+                                        >
+                                            <p className="text-sm text-neutral-600">Saved</p>
+                                        </Transition>
                                     </div>
                                     <div className="flex justify-start mt-4 space-x-4"><br></br>
                                         <Button type="button" className="mt-4">
@@ -859,6 +944,12 @@ export default function Bookings({ availableRoomTypes, availableRooms, available
                                     <Button type="button" onClick={handleAddRoom} className="mt-4">
                                         Add Another Room
                                     </Button>
+                                    {selectedRooms.length > 0 && selectedRooms.some(room => room.roomNumber) && (
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="price">Total Price</Label>
+                                            <p id="price" className="mt-1">{price}</p>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </Card>

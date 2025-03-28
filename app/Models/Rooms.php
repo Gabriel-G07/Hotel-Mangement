@@ -25,7 +25,7 @@ class Rooms extends Model
 
     public function bookings()
     {
-        return $this->hasMany(Booking::class);
+        return $this->hasMany(Booking::class, 'room_id', 'room_id'); // Ensure the foreign key and local key are correct
     }
 
     public function roomType()
