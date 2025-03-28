@@ -35,6 +35,24 @@ interface BookingsProps {
     bookingInfo: BookingInfo[];
 }
 
+// Component to display user suggestions
+const UserSuggestions = ({ suggestions, onSelect }) => {
+    return (
+        <div className="bg-white dark:bg-gray-800 border rounded shadow p-2 mt-2">
+            {suggestions.map(user => (
+                <div
+                    key={user.id}
+                    className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer"
+                    onClick={() => onSelect(user)}
+                >
+                    <p>{user.first_name} {user.last_name} <a className="text-sm text-gray-500"> {user.email}</a></p>
+
+                </div>
+            ))}
+        </div>
+    );
+};
+
 export default function Bookings({ availableRoomTypes, availableRooms, availableGuests }: BookingsProps) {
     const { data, setData, post, errors, processing, recentlySuccessful, reset } = useForm({
         guestNationalId: '',
@@ -71,41 +89,71 @@ export default function Bookings({ availableRoomTypes, availableRooms, available
     }, [availableRooms]);
 
     useEffect(() => {
-        const fetchUsers = async () => {
-            if (Array.isArray(availableGuests)) {
-                setUsers(availableGuests);
-            } else {
-                setUsers([]);
-                console.error('Unexpected response format:', availableGuests);
-            }
-        };
-
-        fetchUsers();
+        if (Array.isArray(availableGuests)) {
+            setUsers(availableGuests);
+        } else {
+            console.error('Unexpected format for availableGuests:', availableGuests);
+        }
     }, [availableGuests]);
 
-    const filterSuggestedUsers = (query) => {
-        if (query.length === 0) {
+    const filterSuggestedUsers = (query: string, inputType: string) => {
+        if (!query.trim()) {
             setSuggestedUsers([]);
             return;
         }
 
-        const filteredUsers = users.filter(user =>
-            (user.national_id_number && user.national_id_number.includes(query)) ||
-            (user.phone_number && user.phone_number.includes(query))
-        );
+        let filteredUsers = [];
+        switch (inputType) {
+            case 'guestNationalId':
+                filteredUsers = users.filter(user =>
+                    user.national_id_number && user.national_id_number.toLowerCase().includes(query.toLowerCase())
+                );
+                break;
+            case 'guestphone':
+                filteredUsers = users.filter(user =>
+                    user.phone_number && user.phone_number.toLowerCase().includes(query.toLowerCase())
+                );
+                break;
+            case 'guestemail':
+                filteredUsers = users.filter(user =>
+                    user.email && user.email.toLowerCase().includes(query.toLowerCase())
+                );
+                break;
+            case 'guestName':
+                filteredUsers = users.filter(user =>
+                    user.first_name && user.first_name.toLowerCase().includes(query.toLowerCase())
+                );
+                break;
+            case 'guestSurname':
+                filteredUsers = users.filter(user =>
+                    user.last_name && user.last_name.toLowerCase().includes(query.toLowerCase())
+                );
+                break;
+            default:
+                filteredUsers = [];
+        }
+
         setSuggestedUsers(filteredUsers);
     };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        const { name, value } = e.target;
-        setData(name, value);
-    };
-
-    const handleInputChange = (e, inputType) => {
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, inputType: string) => {
         const value = e.target.value;
         setActiveInput(inputType);
         setData(inputType, value);
-        filterSuggestedUsers(value);
+        filterSuggestedUsers(value, inputType);
+    };
+
+    const handleUserSelect = (user) => {
+        setData({
+            ...data,
+            guestNationalId: user.national_id_number,
+            guestName: user.first_name,
+            guestSurname: user.last_name,
+            guestemail: user.email,
+            guestphone: user.phone_number,
+            guestAddress: user.address,
+        });
+        setSuggestedUsers([]);
     };
 
     const handleAddRoom = () => {
@@ -211,31 +259,17 @@ export default function Bookings({ availableRoomTypes, availableRooms, available
                                         id="nationalId"
                                         name="guestNationalId"
                                         value={data.guestNationalId}
-                                        onChange={handleChange}
+                                        onChange={(e) => handleInputChange(e, 'guestNationalId')}
                                         required
                                         placeholder="Enter National ID Number"
                                         autoComplete="off"
                                     />
                                     {errors.guestNationalId && <InputError message={errors.guestNationalId} />}
                                     {activeInput === 'guestNationalId' && suggestedUsers.length > 0 && (
-                                        <div className="bg-white dark:bg-gray-800 border rounded shadow p-2 mt-2">
-                                            {suggestedUsers.map(user => (
-                                                <div key={user.id} className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer" onClick={() => {
-                                                    setData({
-                                                        ...data,
-                                                        guestNationalId: user.national_id_number,
-                                                        guestName: user.first_name,
-                                                        guestSurname: user.last_name,
-                                                        guestemail: user.email,
-                                                        guestphone: user.phone_number,
-                                                        guestAddress: user.address,
-                                                    });
-                                                    setSuggestedUsers([]);
-                                                }}>
-                                                    {user.first_name} {user.last_name}
-                                                </div>
-                                            ))}
-                                        </div>
+                                        <UserSuggestions
+                                            suggestions={suggestedUsers}
+                                            onSelect={handleUserSelect}
+                                        />
                                     )}
                                 </div>
                                 <div className="grid gap-2">
@@ -244,31 +278,17 @@ export default function Bookings({ availableRoomTypes, availableRooms, available
                                         id="guestphone"
                                         name="guestphone"
                                         value={data.guestphone}
-                                        onChange={handleChange}
+                                        onChange={(e) => handleInputChange(e, 'guestphone')}
                                         required
                                         placeholder="Enter Phone Number"
                                         autoComplete="off"
                                     />
                                     {errors.guestphone && <InputError message={errors.guestphone} />}
                                     {activeInput === 'guestphone' && suggestedUsers.length > 0 && (
-                                        <div className="bg-white dark:bg-gray-800 border rounded shadow p-2 mt-2">
-                                            {suggestedUsers.map(user => (
-                                                <div key={user.id} className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer" onClick={() => {
-                                                    setData({
-                                                        ...data,
-                                                        guestNationalId: user.national_id_number,
-                                                        guestName: user.first_name,
-                                                        guestSurname: user.last_name,
-                                                        guestemail: user.email,
-                                                        guestphone: user.phone_number,
-                                                        guestAddress: user.address,
-                                                    });
-                                                    setSuggestedUsers([]);
-                                                }}>
-                                                    {user.first_name} {user.last_name}
-                                                </div>
-                                            ))}
-                                        </div>
+                                        <UserSuggestions
+                                            suggestions={suggestedUsers}
+                                            onSelect={handleUserSelect}
+                                        />
                                     )}
                                 </div>
                                 <div className="grid gap-2">
@@ -277,12 +297,18 @@ export default function Bookings({ availableRoomTypes, availableRooms, available
                                         id="guestName"
                                         name="guestName"
                                         value={data.guestName}
-                                        onChange={handleChange}
+                                        onChange={(e) => handleInputChange(e, 'guestName')}
                                         required
                                         placeholder="Enter Guest Name"
                                         autoComplete="off"
                                     />
                                     {errors.guestName && <InputError message={errors.guestName} />}
+                                    {activeInput === 'guestName' && suggestedUsers.length > 0 && (
+                                        <UserSuggestions
+                                            suggestions={suggestedUsers}
+                                            onSelect={handleUserSelect}
+                                        />
+                                    )}
                                 </div>
                                 <div className="grid gap-2">
                                     <Label htmlFor="guestSurname">Guest Surname</Label>
@@ -290,12 +316,18 @@ export default function Bookings({ availableRoomTypes, availableRooms, available
                                         id="guestSurname"
                                         name="guestSurname"
                                         value={data.guestSurname}
-                                        onChange={handleChange}
+                                        onChange={(e) => handleInputChange(e, 'guestSurname')}
                                         required
                                         placeholder="Enter Guest Surname"
                                         autoComplete="off"
                                     />
                                     {errors.guestSurname && <InputError message={errors.guestSurname} />}
+                                    {activeInput === 'guestSurname' && suggestedUsers.length > 0 && (
+                                        <UserSuggestions
+                                            suggestions={suggestedUsers}
+                                            onSelect={handleUserSelect}
+                                        />
+                                    )}
                                 </div>
                                 <div className="grid gap-2">
                                     <Label htmlFor="email">Email</Label>
@@ -304,12 +336,18 @@ export default function Bookings({ availableRoomTypes, availableRooms, available
                                         name="guestemail"
                                         type="email"
                                         value={data.guestemail}
-                                        onChange={handleChange}
+                                        onChange={(e) => handleInputChange(e, 'guestemail')}
                                         required
                                         placeholder="Enter Email"
                                         autoComplete="off"
                                     />
                                     {errors.guestemail && <InputError message={errors.guestemail} />}
+                                    {activeInput === 'guestemail' && suggestedUsers.length > 0 && (
+                                        <UserSuggestions
+                                            suggestions={suggestedUsers}
+                                            onSelect={handleUserSelect}
+                                        />
+                                    )}
                                 </div>
                                 <div className="grid gap-2">
                                     <Label htmlFor="homeAddress">Home Address</Label>
@@ -317,7 +355,7 @@ export default function Bookings({ availableRoomTypes, availableRooms, available
                                         id="homeAddress"
                                         name="guestAddress"
                                         value={data.guestAddress}
-                                        onChange={handleChange}
+                                        onChange={(e) => setData('guestAddress', e.target.value)}
                                         required
                                         placeholder="Enter Home Address"
                                         autoComplete="off"
@@ -331,7 +369,7 @@ export default function Bookings({ availableRoomTypes, availableRooms, available
                                         name="checkInDate"
                                         type="date"
                                         value={data.checkInDate}
-                                        onChange={handleChange}
+                                        onChange={(e) => setData('checkInDate', e.target.value)}
                                         required
                                         autoComplete="off"
                                     />
@@ -344,7 +382,7 @@ export default function Bookings({ availableRoomTypes, availableRooms, available
                                         name="checkOutDate"
                                         type="date"
                                         value={data.checkOutDate}
-                                        onChange={handleChange}
+                                        onChange={(e) => setData('checkOutDate', e.target.value)}
                                         required
                                         autoComplete="off"
                                     />
