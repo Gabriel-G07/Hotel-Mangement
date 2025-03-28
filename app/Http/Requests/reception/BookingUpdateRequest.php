@@ -23,6 +23,12 @@ class BookingUpdateRequest extends FormRequest
             'selectedRooms' => 'required|array',
             'checkInDate' => 'required|date',
             'checkOutDate' => 'required|date|after:checkInDate',
+            'bookingType' => 'required|string|in:Self,Other',
+            'bookerNationalId' => 'nullable|string|max:255|required_if:bookingType,Other',
+            'bookerName' => 'nullable|string|max:255|required_if:bookingType,Other',
+            'bookerSurname' => 'nullable|string|max:255|required_if:bookingType,Other',
+            'bookeremail' => 'nullable|email|max:255|required_if:bookingType,Other',
+            'bookerphone' => 'nullable|string|max:255|required_if:bookingType,Other',
         ];
     }
 }
